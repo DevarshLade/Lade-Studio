@@ -1,7 +1,7 @@
 export type Product = {
   id: string;
   name: string;
-  category: 'Painting' | 'Pots' | 'Canvas' | 'Hand Painted Jewelry' | 'Terracotta Pots' | 'Fabric Painting' | 'Portrait';
+  category: 'Painting' | 'Pots' | 'Canvas' | 'Hand Painted Jewelry' | 'Terracotta Pots' | 'Fabric Painting' | 'Portrait' | 'Wall Hanging';
   price: number;
   originalPrice?: number;
   slug: string;

@@ -50,6 +50,10 @@ function ProductFilters() {
               <RadioGroupItem value="portrait" id="cat-portrait" />
               <Label htmlFor="cat-portrait">Portrait</Label>
             </div>
+             <div className="flex items-center space-x-2">
+              <RadioGroupItem value="wall-hanging" id="cat-wall-hanging" />
+              <Label htmlFor="cat-wall-hanging">Wall Hanging</Label>
+            </div>
           </RadioGroup>
         </div>
 

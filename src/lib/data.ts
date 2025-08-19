@@ -8,6 +8,7 @@ export const categories: Category[] = [
   { name: 'Terracotta Pots', image: 'https://placehold.co/400x500.png', hint: 'terracotta pot' },
   { name: 'Fabric Painting', image: 'https://placehold.co/400x500.png', hint: 'painted fabric' },
   { name: 'Portrait', image: 'https://placehold.co/400x500.png', hint: 'portrait painting' },
+  { name: 'Wall Hanging', image: 'https://placehold.co/400x500.png', hint: 'wall hanging' },
 ];
 
 export const products: Product[] = [
