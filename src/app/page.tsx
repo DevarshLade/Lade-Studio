@@ -24,7 +24,7 @@ export default function Home() {
           data-ai-hint="artist workspace"
         />
         <div className="z-10 p-4 max-w-3xl">
-          <h1 className="text-4xl md:text-6xl font-headline font-bold !text-white tracking-tight leading-tight">Artistry in Every Detail</h1>
+          
           <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto !text-gray-200">
             Discover unique, handmade creations that bring beauty and soul to your home.
           </p>
