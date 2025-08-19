@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,7 @@ function AddressForm() {
 
 function PaymentOptions() {
     return (
-        <RadioGroup defaultValue="stripe">
+        <RadioGroup defaultValue="cod">
             <Label className="text-lg font-headline mb-4 block">Payment Method</Label>
             <div className="space-y-4">
                 <Card className="p-4 flex items-center gap-4">
@@ -57,6 +58,10 @@ function PaymentOptions() {
                  <Card className="p-4 flex items-center gap-4">
                     <RadioGroupItem value="razorpay" id="razorpay" />
                     <Label htmlFor="razorpay" className="flex-grow font-medium">UPI / Netbanking (Razorpay)</Label>
+                </Card>
+                <Card className="p-4 flex items-center gap-4">
+                    <RadioGroupItem value="cod" id="cod" />
+                    <Label htmlFor="cod" className="flex-grow font-medium">Cash on Delivery</Label>
                 </Card>
             </div>
         </RadioGroup>
