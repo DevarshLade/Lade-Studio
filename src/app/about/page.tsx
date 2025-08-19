@@ -7,7 +7,7 @@ export default function AboutPage() {
       <div className="max-w-4xl mx-auto">
         {/* Hero Section */}
         <section className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-4">About Shanti Sadan</h1>
+          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-4">About Lade Studio</h1>
           <p className="text-lg md:text-xl text-muted-foreground">
             A celebration of handmade artistry, where every creation has a soul and a story.
           </p>
@@ -17,7 +17,7 @@ export default function AboutPage() {
         <section className="mb-16">
           <Image
             src="https://placehold.co/1200x600.png"
-            alt="The Shanti Sadan workspace"
+            alt="The Lade Studio workspace"
             width={1200}
             height={600}
             className="rounded-lg object-cover w-full"
@@ -30,13 +30,13 @@ export default function AboutPage() {
           <h2 className="text-3xl md:text-4xl font-headline mb-6">Our Story</h2>
           <div className="text-lg text-foreground/80 space-y-6">
             <p>
-              Shanti Sadan began not in a gallery, but in a small, sunlit corner of a humble apartment, fueled by a passion for creating and a deep appreciation for the imperfect beauty of handmade goods. It started with a single paintbrush, a lump of clay, and the simple idea that art should be accessible, personal, and part of our daily lives.
+              Lade Studio began not in a gallery, but in a small, sunlit corner of a humble apartment, fueled by a passion for creating and a deep appreciation for the imperfect beauty of handmade goods. It started with a single paintbrush, a lump of clay, and the simple idea that art should be accessible, personal, and part of our daily lives.
             </p>
             <p>
-              Our founder, a self-taught artist, found solace and expression in transforming simple materials into objects of beauty. What began as a personal hobby soon blossomed into a calling. Friends and family admired the unique charm of the hand-painted pots, the intricate detail of the terracotta jewelry, and the vibrant energy of the paintings. Their encouragement sparked the idea for Shanti Sadan.
+              Our founder, a self-taught artist, found solace and expression in transforming simple materials into objects of beauty. What began as a personal hobby soon blossomed into a calling. Friends and family admired the unique charm of the hand-painted pots, the intricate detail of the terracotta jewelry, and the vibrant energy of the paintings. Their encouragement sparked the idea for Lade Studio.
             </p>
             <p>
-              Today, Shanti Sadan is a small, independent venture dedicated to bringing you authentic, handcrafted pieces. Each item is a labor of love, meticulously crafted and infused with a unique character that mass-produced items simply cannot replicate. We believe in the power of art to connect, inspire, and bring joy.
+              Today, Lade Studio is a small, independent venture dedicated to bringing you authentic, handcrafted pieces. Each item is a labor of love, meticulously crafted and infused with a unique character that mass-produced items simply cannot replicate. We believe in the power of art to connect, inspire, and bring joy.
             </p>
           </div>
         </section>
@@ -46,7 +46,7 @@ export default function AboutPage() {
           <h2 className="text-3xl md:text-4xl font-headline mb-6">Our Philosophy</h2>
            <div className="text-lg text-foreground/80 space-y-6">
             <p>
-              At Shanti Sadan, we cherish the slow, deliberate process of creating by hand. We embrace the slight variations and unique marks that make each piece one-of-a-kind. Our philosophy is rooted in three core principles:
+              At Lade Studio, we cherish the slow, deliberate process of creating by hand. We embrace the slight variations and unique marks that make each piece one-of-a-kind. Our philosophy is rooted in three core principles:
             </p>
             <ul className="list-disc list-inside space-y-4 pl-4">
               <li>
@@ -60,7 +60,7 @@ export default function AboutPage() {
               </li>
             </ul>
              <p>
-              Thank you for being part of our journey. When you bring a piece from Shanti Sadan into your life, you're not just buying an object; you're supporting an artist's dream and embracing a story of passion and creativity.
+              Thank you for being part of our journey. When you bring a piece from Lade Studio into your life, you're not just buying an object; you're supporting an artist's dream and embracing a story of passion and creativity.
             </p>
           </div>
         </section>

@@ -12,7 +12,7 @@ import SearchDialog from "@/components/search-dialog";
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2">
     <Feather className="h-7 w-7 text-primary" />
-    <span className="text-2xl font-headline font-bold">Shanti Sadan</span>
+    <span className="text-2xl font-headline font-bold">Lade Studio</span>
   </Link>
 );
 

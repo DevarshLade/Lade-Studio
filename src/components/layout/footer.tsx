@@ -6,7 +6,7 @@ import { Feather, Twitter, Instagram, Facebook } from "lucide-react";
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2 mb-4">
     <Feather className="h-7 w-7 text-primary" />
-    <span className="text-2xl font-headline font-bold">Shanti Sadan</span>
+    <span className="text-2xl font-headline font-bold">Lade Studio</span>
   </Link>
 );
 
@@ -62,7 +62,7 @@ export default function Footer() {
         </div>
         
         <div className="mt-12 border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Shanti Sadan. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Lade Studio. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
