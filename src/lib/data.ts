@@ -116,7 +116,7 @@ export const products: Product[] = [
     category: 'Hand Painted Jewelry',
     price: 1500,
     slug: 'earth-goddess-necklace',
-    images: ['https://placehold.co/600x600.png'],
+    images: ['https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjsr-MtbBjmDfxrGgcv2ZJP7u5qLx54P8xGmMzu6fTOBaWmJKhbwkIh7aq890aBYdKtGahVawFWhBon5yiRw11RyX1Yd2Xc2KiciS7FxT7gAGEdvPzeAAmJBunqvHFFMT-AkehEyjPPGFxyJgsEpl9zMKbYCse8UwjYR81TWFL92oEvoZKX-aAWAy6rttJr/s2048/Gemini_Generated_Image_hpdwb1hpdwb1hpdw.png'],
     description: 'A multi-strand necklace featuring various hand-molded and painted terracotta beads.',
     specification: 'Baked terracotta clay, glass beads, adjustable cord.',
     aiHint: 'beaded necklace'
@@ -211,14 +211,14 @@ export const blogPosts: BlogPost[] = [
   {
     id: 'blog-2',
     title: '5 Ways to Style Your Home with Art',
-    image: 'https://placehold.co/400x250.png',
+    image: 'https://images.unsplash.com/photo-1656275537619-43565fdd6655?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHw1JTIwV2F5cyUyMHRvJTIwU3R5bGUlMjBZb3VyJTIwSG9tZSUyMHdpdGglMjBBcnR8ZW58MHx8fHwxNzU1NjIyMTgzfDA&ixlib=rb-4.1.0&q=80&w=1080',
     excerpt: 'Art isn\'t just for galleries. Discover creative and simple ways to integrate handmade art into your home decor for a personal touch.',
     hint: 'interior design'
   },
   {
     id: 'blog-3',
     title: 'A Glimpse into Terracotta Crafting',
-    image: 'https://placehold.co/400x250.png',
+    image: 'https://images.unsplash.com/photo-1664787294667-b64f325a751a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxBJTIwR2xpbXBzZSUyMGludG8lMjBUZXJyYWNvdHRhJTIwQ3JhZnRpbmd8ZW58MHx8fHwxNzU1NjIyMTYyfDA&ixlib=rb-4.1.0&q=80&w=1080',
     excerpt: 'From a simple block of clay to a beautiful piece of jewelry. Join me in the studio for a visual journey of how my terracotta pieces are made.',
     hint: 'pottery making'
   },
