@@ -13,14 +13,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/context/cart-context";
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+  const product = products.find((p) => p.slug === params.slug);
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const { addToCart } = useCart();
   const router = useRouter();
 
-  const product = products.find((p) => p.slug === slug);
 
   if (!product) {
     notFound();
