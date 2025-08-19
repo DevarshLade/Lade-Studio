@@ -54,7 +54,7 @@ export const products: Product[] = [
     category: 'Canvas',
     price: 6200,
     slug: 'forest-whispers',
-    images: ['https://placehold.co/600x600.png'],
+    images: ['https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi48eR8MsoLRqWCPVibmS6lAM4rmND70S-0PlMs84zso_oU8xi1Mo3oaWOjp9MSCTnOQMNFBlt6M_DXTI8m5srnXD0L5WkxoAHJi90UyEXwUTC9URnPZ-j65k7A4vwRxagLMwg4hPkqdiRTou4Mk50gs7A8tBHYEp_XsIgrmFwjMqLO8sznT7dh2wfLfGqg/s1304/WhatsApp%20Image%202025-08-19%20at%209.43.48%20PM%20(1).jpeg'],
     description: 'A textured painting capturing the serene and mysterious atmosphere of a misty forest.',
     specification: 'Oil and mixed media on canvas, 30x40 inches.',
     isFeatured: true,
