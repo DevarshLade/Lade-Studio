@@ -25,12 +25,6 @@ export default function Home() {
         />
         <div className="z-10 p-4 max-w-3xl">
           
-          <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto !text-gray-200">
-            Discover unique, handmade creations that bring beauty and soul to your home.
-          </p>
-          <Button asChild size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Link href="/products">Explore Collections <ArrowRight className="ml-2 h-5 w-5" /></Link>
-          </Button>
         </div>
       </section>
 
