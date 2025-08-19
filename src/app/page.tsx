@@ -20,7 +20,7 @@ export default function Home() {
           alt="Artist at work"
           layout="fill"
           objectFit="cover"
-          className="z-0 brightness-50"
+          className="z-0"
           data-ai-hint="artist workspace"
         />
         <div className="z-10 p-4 max-w-3xl">
