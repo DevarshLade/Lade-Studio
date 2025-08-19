@@ -1,3 +1,6 @@
+
+"use client"
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -5,13 +8,29 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Box, Home, User } from "lucide-react";
+import { Box, Home, User, PackageSearch } from "lucide-react";
+import Link from "next/link";
 
-const orders = [
-    { id: "ORD001", date: "2023-10-26", total: 4540, status: "Delivered" },
-    { id: "ORD002", date: "2023-11-15", total: 1240, status: "Shipped" },
-    { id: "ORD003", date: "2023-11-20", total: 850, status: "Processing" },
+const orders: any[] = [
+    // { id: "ORD001", date: "2023-10-26", total: 4540, status: "Delivered" },
+    // { id: "ORD002", date: "2023-11-15", total: 1240, status: "Shipped" },
+    // { id: "ORD003", date: "2023-11-20", total: 850, status: "Processing" },
 ];
+
+function EmptyState({ icon: Icon, title, description, buttonText, buttonLink }: { icon: React.ElementType, title: string, description: string, buttonText: string, buttonLink: string }) {
+    return (
+        <div className="text-center p-8 flex flex-col items-center">
+            <div className="bg-primary/10 text-primary p-4 rounded-full mb-4">
+                <Icon className="h-10 w-10" />
+            </div>
+            <h3 className="text-2xl font-headline mb-2">{title}</h3>
+            <p className="text-muted-foreground mb-6 max-w-sm">{description}</p>
+            <Button asChild>
+                <Link href={buttonLink}>{buttonText}</Link>
+            </Button>
+        </div>
+    )
+}
 
 function OrdersTab() {
     return (
@@ -21,26 +40,36 @@ function OrdersTab() {
                 <CardDescription>View your past and current orders.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Order ID</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {orders.map(order => (
-                            <TableRow key={order.id}>
-                                <TableCell className="font-medium">{order.id}</TableCell>
-                                <TableCell>{order.date}</TableCell>
-                                <TableCell>{order.status}</TableCell>
-                                <TableCell className="text-right">₹{order.total.toLocaleString()}</TableCell>
+                {orders.length > 0 ? (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Order ID</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Total</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {orders.map(order => (
+                                <TableRow key={order.id}>
+                                    <TableCell className="font-medium">{order.id}</TableCell>
+                                    <TableCell>{order.date}</TableCell>
+                                    <TableCell>{order.status}</TableCell>
+                                    <TableCell className="text-right">₹{order.total.toLocaleString()}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : (
+                    <EmptyState 
+                        icon={PackageSearch}
+                        title="No Orders Yet"
+                        description="You haven't placed any orders with us. Once you do, they will appear here."
+                        buttonText="Start Shopping"
+                        buttonLink="/products"
+                    />
+                )}
             </CardContent>
         </Card>
     )
@@ -56,11 +85,11 @@ function ProfileTab() {
             <CardContent className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" defaultValue="Aarav Sharma" />
+                    <Input id="name" defaultValue="" placeholder="Your full name" />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" defaultValue="aarav.sharma@example.com" />
+                    <Input id="email" type="email" defaultValue="" placeholder="your.email@example.com" />
                 </div>
                 <Separator />
                 <h3 className="text-lg font-headline">Change Password</h3>
@@ -86,6 +115,15 @@ function AddressesTab() {
                 <CardDescription>Manage your saved shipping addresses.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+                <EmptyState 
+                    icon={Home}
+                    title="No Addresses Saved"
+                    description="You don't have any saved addresses. Add one during checkout to see it here."
+                    buttonText="Add New Address"
+                    buttonLink="/checkout"
+                />
+                {/* 
+                Example of a saved address card:
                 <Card className="p-4 bg-muted/50">
                     <p className="font-semibold">Aarav Sharma</p>
                     <p>123 Art Lane, Creativity Nagar,</p>
@@ -97,7 +135,8 @@ function AddressesTab() {
                         <Button variant="destructive">Delete</Button>
                     </div>
                 </Card>
-                <Button>Add New Address</Button>
+                <Button>Add New Address</Button> 
+                */}
             </CardContent>
         </Card>
     );
