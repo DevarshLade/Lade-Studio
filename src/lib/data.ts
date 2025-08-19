@@ -104,7 +104,7 @@ export const products: Product[] = [
     category: 'Terracotta Pots',
     price: 1800,
     slug: 'mandala-planter',
-    images: ['https://placehold.co/600x600.png'],
+    images: ['https://images.unsplash.com/photo-1607135097879-b6371869411a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxN3x8TWFuZGFsYSUyMFBsYW50ZXIlMjBwYWludGluZ3xlbnwwfHx8fDE3NTU2MjE5Nzl8MA&ixlib=rb-4.1.0&q=80&w=1080'],
     description: 'An intricately detailed mandala design hand-drawn on a large ceramic planter.',
     specification: 'Ceramic, permanent markers, sealant. 12-inch diameter.',
     isFeatured: true,
