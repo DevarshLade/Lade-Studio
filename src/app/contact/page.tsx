@@ -13,6 +13,13 @@ export default function ContactPage() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-5xl mx-auto">
+        <section className="text-center mb-16">
+          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-4">Get in Touch</h1>
+          <p className="text-lg md:text-xl text-muted-foreground">
+            We'd love to hear from you! Whether you have a question about our products, a custom order request, or just want to say hello.
+          </p>
+        </section>
+
         <Card className="mb-16">
           <CardHeader>
             <CardTitle className="font-headline text-2xl text-center">Contact Us</CardTitle>
@@ -24,13 +31,6 @@ export default function ContactPage() {
             />
           </CardContent>
         </Card>
-
-        <section className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-4">Get in Touch</h1>
-          <p className="text-lg md:text-xl text-muted-foreground">
-            We'd love to hear from you! Whether you have a question about our products, a custom order request, or just want to say hello.
-          </p>
-        </section>
 
         <div className="space-y-8">
           <h2 className="text-3xl font-headline text-center">Contact Information</h2>
