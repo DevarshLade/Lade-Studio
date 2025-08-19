@@ -10,6 +10,7 @@ import { ArrowRight, ShoppingCart } from "lucide-react";
 import ProductCard from "@/components/product-card";
 
 export default function Home() {
+  const homeCategories = categories.slice(0, 3);
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -38,8 +39,8 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">Explore Categories</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {categories.map((category) => (
-              <Link href="/products" key={category.name} className="group">
+            {homeCategories.map((category) => (
+              <Link href={`/products?category=${category.name.toLowerCase().replace(/ /g, '-')}`} key={category.name} className="group">
                 <Card className="overflow-hidden border-2 border-transparent hover:border-primary transition-all duration-300 hover:shadow-xl">
                   <CardContent className="p-0">
                     <Image

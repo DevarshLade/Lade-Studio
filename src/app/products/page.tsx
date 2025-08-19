@@ -23,16 +23,32 @@ function ProductFilters() {
               <Label htmlFor="cat-all">All</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="paintings" id="cat-paintings" />
-              <Label htmlFor="cat-paintings">Paintings</Label>
+              <RadioGroupItem value="painting" id="cat-painting" />
+              <Label htmlFor="cat-painting">Painting</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="pots" id="cat-pots" />
-              <Label htmlFor="cat-pots">Hand-Painted Pots</Label>
+              <Label htmlFor="cat-pots">Pots</Label>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="jewelry" id="cat-jewelry" />
-              <Label htmlFor="cat-jewelry">Terracotta Jewelry</Label>
+             <div className="flex items-center space-x-2">
+              <RadioGroupItem value="canvas" id="cat-canvas" />
+              <Label htmlFor="cat-canvas">Canvas</Label>
+            </div>
+             <div className="flex items-center space-x-2">
+              <RadioGroupItem value="hand-painted-jewelry" id="cat-hand-painted-jewelry" />
+              <Label htmlFor="cat-hand-painted-jewelry">Hand Painted Jewelry</Label>
+            </div>
+             <div className="flex items-center space-x-2">
+              <RadioGroupItem value="terracotta-pots" id="cat-terracotta-pots" />
+              <Label htmlFor="cat-terracotta-pots">Terracotta Pots</Label>
+            </div>
+             <div className="flex items-center space-x-2">
+              <RadioGroupItem value="fabric-painting" id="cat-fabric-painting" />
+              <Label htmlFor="cat-fabric-painting">Fabric Painting</Label>
+            </div>
+             <div className="flex items-center space-x-2">
+              <RadioGroupItem value="portrait" id="cat-portrait" />
+              <Label htmlFor="cat-portrait">Portrait</Label>
             </div>
           </RadioGroup>
         </div>

@@ -1,16 +1,20 @@
 import type { Product, Category, Testimonial, BlogPost } from "@/types";
 
 export const categories: Category[] = [
-  { name: 'Paintings', image: 'https://placehold.co/400x500.png', hint: 'abstract painting' },
-  { name: 'Hand-Painted Pots', image: 'https://placehold.co/400x500.png', hint: 'painted pot' },
-  { name: 'Terracotta Jewelry', image: 'https://placehold.co/400x500.png', hint: 'terracotta necklace' },
+  { name: 'Painting', image: 'https://placehold.co/400x500.png', hint: 'abstract painting' },
+  { name: 'Pots', image: 'https://placehold.co/400x500.png', hint: 'painted pot' },
+  { name: 'Canvas', image: 'https://placehold.co/400x500.png', hint: 'artist canvas' },
+  { name: 'Hand Painted Jewelry', image: 'https://placehold.co/400x500.png', hint: 'terracotta necklace' },
+  { name: 'Terracotta Pots', image: 'https://placehold.co/400x500.png', hint: 'terracotta pot' },
+  { name: 'Fabric Painting', image: 'https://placehold.co/400x500.png', hint: 'painted fabric' },
+  { name: 'Portrait', image: 'https://placehold.co/400x500.png', hint: 'portrait painting' },
 ];
 
 export const products: Product[] = [
   {
     id: 'prod-1',
     name: 'Celestial Dreams',
-    category: 'Paintings',
+    category: 'Painting',
     price: 4500,
     slug: 'celestial-dreams',
     images: ['https://placehold.co/600x600.png', 'https://placehold.co/600x600.png', 'https://placehold.co/600x600.png'],
@@ -22,7 +26,7 @@ export const products: Product[] = [
   {
     id: 'prod-2',
     name: 'Earthen Jar',
-    category: 'Hand-Painted Pots',
+    category: 'Pots',
     price: 1200,
     originalPrice: 1500,
     slug: 'earthen-jar',
@@ -35,7 +39,7 @@ export const products: Product[] = [
   {
     id: 'prod-3',
     name: 'Tribal Pendant',
-    category: 'Terracotta Jewelry',
+    category: 'Hand Painted Jewelry',
     price: 850,
     slug: 'tribal-pendant',
     images: ['https://placehold.co/600x600.png'],
@@ -47,7 +51,7 @@ export const products: Product[] = [
   {
     id: 'prod-4',
     name: 'Forest Whispers',
-    category: 'Paintings',
+    category: 'Canvas',
     price: 6200,
     slug: 'forest-whispers',
     images: ['https://placehold.co/600x600.png'],
@@ -59,7 +63,7 @@ export const products: Product[] = [
   {
     id: 'prod-5',
     name: 'Sunset Bloom Pot',
-    category: 'Hand-Painted Pots',
+    category: 'Pots',
     price: 950,
     slug: 'sunset-bloom-pot',
     images: ['https://placehold.co/600x600.png'],
@@ -71,7 +75,7 @@ export const products: Product[] = [
   {
     id: 'prod-6',
     name: 'Geometric Earrings',
-    category: 'Terracotta Jewelry',
+    category: 'Hand Painted Jewelry',
     price: 600,
     originalPrice: 750,
     slug: 'geometric-earrings',
@@ -84,7 +88,7 @@ export const products: Product[] = [
   {
     id: 'prod-7',
     name: 'Oceanic Depths',
-    category: 'Paintings',
+    category: 'Painting',
     price: 8000,
     originalPrice: 10000,
     slug: 'oceanic-depths',
@@ -97,7 +101,7 @@ export const products: Product[] = [
   {
     id: 'prod-8',
     name: 'Mandala Planter',
-    category: 'Hand-Painted Pots',
+    category: 'Terracotta Pots',
     price: 1800,
     slug: 'mandala-planter',
     images: ['https://placehold.co/600x600.png'],
@@ -109,7 +113,7 @@ export const products: Product[] = [
   {
     id: 'prod-9',
     name: 'Earth Goddess Necklace',
-    category: 'Terracotta Jewelry',
+    category: 'Hand Painted Jewelry',
     price: 1500,
     slug: 'earth-goddess-necklace',
     images: ['https://placehold.co/600x600.png'],
@@ -120,7 +124,7 @@ export const products: Product[] = [
   {
     id: 'prod-10',
     name: 'City at Dusk',
-    category: 'Paintings',
+    category: 'Canvas',
     price: 3800,
     slug: 'city-at-dusk',
     images: ['https://placehold.co/600x600.png'],
@@ -131,7 +135,7 @@ export const products: Product[] = [
   {
     id: 'prod-11',
     name: 'Azure Dream',
-    category: 'Paintings',
+    category: 'Painting',
     price: 5200,
     slug: 'azure-dream',
     images: ['https://placehold.co/600x600.png'],
@@ -142,7 +146,7 @@ export const products: Product[] = [
   {
     id: 'prod-12',
     name: 'Golden Radiance',
-    category: 'Terracotta Jewelry',
+    category: 'Hand Painted Jewelry',
     price: 950,
     originalPrice: 1100,
     slug: 'golden-radiance',
@@ -151,6 +155,28 @@ export const products: Product[] = [
     specification: 'Baked terracotta clay, gold-plated hooks.',
     aiHint: 'indian jewelry'
   },
+  {
+    id: 'prod-13',
+    name: 'Floral Fabric',
+    category: 'Fabric Painting',
+    price: 2500,
+    slug: 'floral-fabric',
+    images: ['https://placehold.co/600x600.png'],
+    description: 'A beautiful piece of cotton fabric hand-painted with a vibrant floral design.',
+    specification: 'Cotton fabric, fabric paint. 2 meters.',
+    aiHint: 'painted fabric'
+  },
+  {
+    id: 'prod-14',
+    name: 'The Old Man',
+    category: 'Portrait',
+    price: 7500,
+    slug: 'the-old-man',
+    images: ['https://placehold.co/600x600.png'],
+    description: 'A striking portrait capturing the wisdom and character of an old man.',
+    specification: 'Charcoal on paper, 24x30 inches, framed.',
+    aiHint: 'portrait drawing'
+  }
 ];
 
 export const testimonials: Testimonial[] = [

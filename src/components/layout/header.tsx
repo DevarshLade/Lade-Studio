@@ -11,9 +11,13 @@ const Logo = () => (
 );
 
 const navLinks = [
-  { href: "/products", label: "Paintings" },
-  { href: "/products", label: "Hand-Painted Pots" },
-  { href: "/products", label: "Terracotta Jewelry" },
+  { href: "/products?category=painting", label: "Painting" },
+  { href: "/products?category=pots", label: "Pots" },
+  { href: "/products?category=canvas", label: "Canvas" },
+  { href: "/products?category=hand-painted-jewelry", label: "Hand Painted Jewelry" },
+  { href: "/products?category=terracotta-pots", label: "Terracotta Pots" },
+  { href: "/products?category=fabric-painting", label: "Fabric Painting" },
+  { href: "/products?category=portrait", label: "Portrait" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
