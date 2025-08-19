@@ -14,7 +14,6 @@ const Logo = () => (
 
 const navLinks = [
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
   { href: "/blog", label: "Blog" },
 ];
 
