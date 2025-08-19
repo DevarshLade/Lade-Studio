@@ -17,7 +17,7 @@ export const products: Product[] = [
     category: 'Painting',
     price: 4500,
     slug: 'celestial-dreams',
-    images: ['https://placehold.co/600x600.png', 'https://placehold.co/600x600.png', 'https://placehold.co/600x600.png'],
+    images: ['https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjedMhWoToqXz_7P2HWCpXVh89fr1tpjuU0BwiIyjYxwnC00ULsurlcPvZL_-v-Th_oN0WJY1XPdauo95gcLsxX1zdtvDYo2JxarSwKTgo5nz3dxusew22c5CFjt8GBg_gZLF2OXZJlPRl5n-e2Yydb-eQm5AX0HfKnIGWHA-74Akc6tmNOBhh66GqZQ376/s845/1d614277-e409-4895-86b8-c4df32173339.png', 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjedMhWoToqXz_7P2HWCpXVh89fr1tpjuU0BwiIyjYxwnC00ULsurlcPvZL_-v-Th_oN0WJY1XPdauo95gcLsxX1zdtvDYo2JxarSwKTgo5nz3dxusew22c5CFjt8GBg_gZLF2OXZJlPRl5n-e2Yydb-eQm5AX0HfKnIGWHA-74Akc6tmNOBhh66GqZQ376/s845/1d614277-e409-4895-86b8-c4df32173339.png', 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjedMhWoToqXz_7P2HWCpXVh89fr1tpjuU0BwiIyjYxwnC00ULsurlcPvZL_-v-Th_oN0WJY1XPdauo95gcLsxX1zdtvDYo2JxarSwKTgo5nz3dxusew22c5CFjt8GBg_gZLF2OXZJlPRl5n-e2Yydb-eQm5AX0HfKnIGWHA-74Akc6tmNOBhh66GqZQ376/s845/1d614277-e409-4895-86b8-c4df32173339.png'],
     description: 'An abstract exploration of the night sky, blending deep blues with shimmering gold accents.',
     specification: 'Acrylic on canvas, 24x36 inches. Varnished for protection.',
     isFeatured: true,
