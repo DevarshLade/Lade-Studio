@@ -6,7 +6,7 @@ import { Search, ShoppingCart, User, Menu, Feather } from "lucide-react";
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2">
     <Feather className="h-7 w-7 text-primary" />
-    <span className="text-2xl font-headline font-bold">KalaKriti</span>
+    <span className="text-2xl font-headline font-bold">Lade Studio</span>
   </Link>
 );
 
@@ -14,8 +14,8 @@ const navLinks = [
   { href: "/products", label: "Paintings" },
   { href: "/products", label: "Hand-Painted Pots" },
   { href: "/products", label: "Terracotta Jewelry" },
-  { href: "#", label: "About" },
-  { href: "#", label: "Contact" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
 ];
 
 const NavLinks = ({ className }: { className?: string }) => (

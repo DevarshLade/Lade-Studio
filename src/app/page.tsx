@@ -116,7 +116,7 @@ export default function Home() {
                 </CardContent>
                 <CardFooter>
                   <Button asChild variant="link" className="p-0 h-auto">
-                    <Link href="#">Read More <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                    <Link href="/blog">Read More <ArrowRight className="ml-2 h-4 w-4" /></Link>
                   </Button>
                 </CardFooter>
               </Card>

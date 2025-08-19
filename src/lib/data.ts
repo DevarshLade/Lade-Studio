@@ -54,7 +54,7 @@ export const products: Product[] = [
     description: 'A textured painting capturing the serene and mysterious atmosphere of a misty forest.',
     specification: 'Oil and mixed media on canvas, 30x40 inches.',
     isFeatured: true,
-aiHint: 'forest painting'
+    aiHint: 'forest painting'
   },
   {
     id: 'prod-5',
@@ -66,7 +66,7 @@ aiHint: 'forest painting'
     description: 'A vibrant pot painted with a floral design inspired by sunset hues.',
     specification: 'Ceramic, acrylic paint, gloss varnish. 6-inch diameter.',
     isFeatured: true,
-aiHint: 'flower pot'
+    aiHint: 'flower pot'
   },
   {
     id: 'prod-6',
@@ -79,7 +79,7 @@ aiHint: 'flower pot'
     description: 'Lightweight, hand-painted terracotta earrings featuring a modern geometric pattern.',
     specification: 'Baked terracotta clay, sterling silver hooks.',
     isFeatured: true,
-aiHint: 'handmade earrings'
+    aiHint: 'handmade earrings'
   },
   {
     id: 'prod-7',

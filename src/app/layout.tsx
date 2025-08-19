@@ -5,7 +5,7 @@ import Footer from '@/components/layout/footer';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'KalaKriti Creations - Artistry in Every Detail',
+  title: 'Lade Studio - Artistry in Every Detail',
   description: 'An e-commerce website for an independent artist selling unique, handmade products like Paintings, Hand-Painted Pots, and Terracotta Jewelry.',
 };
 

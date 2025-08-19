@@ -6,7 +6,7 @@ import { Feather, Twitter, Instagram, Facebook } from "lucide-react";
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2 mb-4">
     <Feather className="h-7 w-7 text-primary" />
-    <span className="text-2xl font-headline font-bold">KalaKriti</span>
+    <span className="text-2xl font-headline font-bold">Lade Studio</span>
   </Link>
 );
 
@@ -29,9 +29,9 @@ export default function Footer() {
             <h3 className="font-headline text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li><Link href="/products" className="hover:text-primary transition-colors">All Products</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">About Us</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Blog</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Contact</Link></li>
+              <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
+              <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
             </ul>
           </div>
 
@@ -63,7 +63,7 @@ export default function Footer() {
         </div>
         
         <div className="mt-12 border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} KalaKriti Creations. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Lade Studio. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
