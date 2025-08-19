@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Search, ShoppingCart, User, Menu, Feather } from "lucide-react";
+import { Search, ShoppingCart, User, Menu, Feather, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { categories } from "@/lib/data";
 
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2">
@@ -11,19 +13,34 @@ const Logo = () => (
 );
 
 const navLinks = [
-  { href: "/products?category=painting", label: "Painting" },
-  { href: "/products?category=pots", label: "Pots" },
-  { href: "/products?category=canvas", label: "Canvas" },
-  { href: "/products?category=hand-painted-jewelry", label: "Hand Painted Jewelry" },
-  { href: "/products?category=terracotta-pots", label: "Terracotta Pots" },
-  { href: "/products?category=fabric-painting", label: "Fabric Painting" },
-  { href: "/products?category=portrait", label: "Portrait" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
+  { href: "/blog", label: "Blog" },
 ];
+
+const ShopDropdown = () => (
+    <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button variant="ghost">
+                Shop <ChevronDown className="ml-1 h-4 w-4" />
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+            <DropdownMenuItem asChild>
+                <Link href="/products">All Products</Link>
+            </DropdownMenuItem>
+            {categories.map((category) => (
+                <DropdownMenuItem key={category.name} asChild>
+                    <Link href={`/products?category=${category.name.toLowerCase().replace(/ /g, '-')}`}>{category.name}</Link>
+                </DropdownMenuItem>
+            ))}
+        </DropdownMenuContent>
+    </DropdownMenu>
+);
 
 const NavLinks = ({ className }: { className?: string }) => (
   <nav className={className}>
+    <ShopDropdown />
     {navLinks.map((link) => (
       <Button key={link.label} variant="ghost" asChild>
         <Link href={link.href}>{link.label}</Link>
@@ -74,6 +91,7 @@ export default function Header() {
                   <Logo />
                 </div>
                 <nav className="flex flex-col items-start gap-2 p-4">
+                  <ShopDropdown />
                   {navLinks.map((link) => (
                     <Button key={link.label} variant="link" asChild className="text-lg">
                       <Link href={link.href}>{link.label}</Link>
