@@ -92,7 +92,7 @@ export const products: Product[] = [
     price: 8000,
     originalPrice: 10000,
     slug: 'oceanic-depths',
-    images: ['https://placehold.co/600x600.png'],
+    images: ['https://images.unsplash.com/photo-1688222612506-94f3cb381534?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxM3x8T2NlYW5pYyUyMERlcHRocyUyMHBhaW50aW5nfGVufDB8fHx8MTc1NTYyMTgwNHww&ixlib=rb-4.1.0&q=80&w=1080'],
     description: 'A large-scale abstract piece that captures the powerful movement of the ocean.',
     specification: 'Acrylic on canvas, 48x48 inches.',
     isFeatured: true,
