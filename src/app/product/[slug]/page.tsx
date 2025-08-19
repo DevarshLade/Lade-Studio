@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useState, use } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import { products } from "@/lib/data";
 import { Button } from "@/components/ui/button";
@@ -10,11 +9,15 @@ import { Heart, Minus, Plus, ShoppingCart } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ArtworkSuggestions } from "./artwork-suggestions";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/context/cart-context";
+import type { Product } from "@/types";
 
 export default function ProductDetailPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const { addToCart } = useCart();
+  const router = useRouter();
 
   const params = use(paramsPromise);
   const product = products.find((p) => p.slug === params.slug);
@@ -24,6 +27,7 @@ export default function ProductDetailPage({ params: paramsPromise }: { params: P
   }
 
   const handleAddToCart = () => {
+    addToCart(product, quantity);
     toast({
       title: "Added to Cart!",
       description: `${quantity} x ${product.name}`,
@@ -31,12 +35,8 @@ export default function ProductDetailPage({ params: paramsPromise }: { params: P
   };
 
   const handleBuyNow = () => {
-    toast({
-      title: "Proceeding to Checkout",
-      description: "You will be redirected shortly.",
-    });
-    // In a real app, you would redirect to the checkout page.
-    // window.location.href = '/checkout';
+    addToCart(product, quantity);
+    router.push('/checkout');
   };
 
   const handleFavorite = () => {
@@ -46,7 +46,6 @@ export default function ProductDetailPage({ params: paramsPromise }: { params: P
       description: product.name,
     });
   };
-
 
   return (
     <div className="container mx-auto px-4 py-12">

@@ -2,39 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { products } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Minus, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-
-type CartItem = typeof products[0] & { quantity: number };
+import { useCart } from "@/context/cart-context";
 
 export default function CartPage() {
-  const { toast } = useToast();
-  const [cartItems, setCartItems] = useState<CartItem[]>(
-    products.slice(0, 3).map(p => ({ ...p, quantity: 1 }))
-  );
-
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setCartItems(currentItems =>
-      currentItems.map(item =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems(currentItems => currentItems.filter(item => item.id !== id));
-    toast({
-        title: "Item Removed",
-        description: "The item has been removed from your cart."
-    })
-  };
+  const { cartItems, updateQuantity, removeFromCart } = useCart();
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const shipping = 150;
@@ -67,7 +43,7 @@ export default function CartPage() {
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
                 </div>
                 <p className="w-24 text-right font-semibold">₹{(item.price * item.quantity).toLocaleString()}</p>
-                <Button variant="ghost" size="icon" className="ml-4 text-muted-foreground hover:text-destructive" onClick={() => removeItem(item.id)}>
+                <Button variant="ghost" size="icon" className="ml-4 text-muted-foreground hover:text-destructive" onClick={() => removeFromCart(item.id)}>
                   <Trash2 className="h-5 w-5" />
                 </Button>
               </Card>

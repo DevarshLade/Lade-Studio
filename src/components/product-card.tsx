@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/context/cart-context";
 
 type ProductCardProps = {
   product: Product;
@@ -15,10 +16,12 @@ type ProductCardProps = {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { toast } = useToast();
+  const { addToCart } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // prevent link navigation
     e.stopPropagation();
+    addToCart(product, 1);
     toast({
       title: "Added to Cart!",
       description: `${product.name} has been added to your cart.`,
