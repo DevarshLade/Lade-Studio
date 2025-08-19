@@ -6,7 +6,7 @@ import { CartProvider } from '@/context/cart-context';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Lade Studio - Artistry in Every Detail',
+  title: 'Shanti Sadan - Artistry in Every Detail',
   description: 'An e-commerce website for an independent artist selling unique, handmade products like Paintings, Hand-Painted Pots, and Terracotta Jewelry.',
 };
 
