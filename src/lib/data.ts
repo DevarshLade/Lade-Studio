@@ -119,6 +119,7 @@ export const products: Product[] = [
     images: ['https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjsr-MtbBjmDfxrGgcv2ZJP7u5qLx54P8xGmMzu6fTOBaWmJKhbwkIh7aq890aBYdKtGahVawFWhBon5yiRw11RyX1Yd2Xc2KiciS7FxT7gAGEdvPzeAAmJBunqvHFFMT-AkehEyjPPGFxyJgsEpl9zMKbYCse8UwjYR81TWFL92oEvoZKX-aAWAy6rttJr/s2048/Gemini_Generated_Image_hpdwb1hpdwb1hpdw.png'],
     description: 'A multi-strand necklace featuring various hand-molded and painted terracotta beads.',
     specification: 'Baked terracotta clay, glass beads, adjustable cord.',
+    isFeatured: true,
     aiHint: 'beaded necklace'
   },
   {
