@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, use } from "react";
-import { notFound, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import { products } from "@/lib/data";
 import { Button } from "@/components/ui/button";
@@ -11,22 +11,16 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ArtworkSuggestions } from "./artwork-suggestions";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/context/cart-context";
-import type { Product } from "@/types";
-
-function useProduct() {
-  const params = use(useSearchParams() as any);
-  const product = products.find((p) => p.slug === params.slug);
-  return product;
-}
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const { addToCart } = useCart();
   const router = useRouter();
 
-  const product = products.find((p) => p.slug === params.slug);
+  const product = products.find((p) => p.slug === slug);
 
   if (!product) {
     notFound();
