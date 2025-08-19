@@ -79,7 +79,7 @@ export const products: Product[] = [
     price: 600,
     originalPrice: 750,
     slug: 'geometric-earrings',
-    images: ['https://placehold.co/600x600.png'],
+    images: ['https://images.unsplash.com/photo-1745192896602-e64f0e1e428d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxoYW5kJTIwbWFkZSUyMEVhcnJpbmd8ZW58MHx8fHwxNzU1NjIxNjU0fDA&ixlib=rb-4.1.0&q=80&w=1080'],
     description: 'Lightweight, hand-painted terracotta earrings featuring a modern geometric pattern.',
     specification: 'Baked terracotta clay, sterling silver hooks.',
     isFeatured: true,
