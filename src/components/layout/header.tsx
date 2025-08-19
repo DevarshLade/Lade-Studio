@@ -44,6 +44,9 @@ const ShopDropdown = () => (
 const NavLinks = ({ className }: { className?: string }) => (
   <nav className={className}>
     <ShopDropdown />
+    <Button variant="ghost" asChild>
+        <Link href="/custom-design">Custom Design</Link>
+    </Button>
     {navLinks.map((link) => (
       <Button key={link.label} variant="ghost" asChild>
         <Link href={link.href}>{link.label}</Link>
@@ -95,6 +98,9 @@ export default function Header() {
                 </div>
                 <nav className="flex flex-col items-start gap-2 p-4">
                   <ShopDropdown />
+                  <Button variant="link" asChild className="text-lg">
+                    <Link href="/custom-design">Custom Design</Link>
+                  </Button>
                   {navLinks.map((link) => (
                     <Button key={link.label} variant="link" asChild className="text-lg">
                       <Link href={link.href}>{link.label}</Link>
