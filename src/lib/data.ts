@@ -42,7 +42,7 @@ export const products: Product[] = [
     category: 'Hand Painted Jewelry',
     price: 850,
     slug: 'tribal-pendant',
-    images: ['https://placehold.co/600x600.png'],
+    images: ['https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEicMC3_psCn7s0u7ixVD2EBxT1T12tejwp4UroUV6K7GICThVMH_dUMCIN0zko8RtH5u1ief9zicW-WHKrAf_WhwpW1H1nJ6ciDrkDlYv3tpNK3bCoJNhU2spEgAGV2NVNdEY8kXwmNhZUw54blxtAWdgm4MHYCXugSi4jZ0murKlVVmnkSQMStHSyJrRxl/s1080/WhatsApp%20Image%202025-08-19%20at%209.43.50%20PM.jpeg'],
     description: 'A bold, hand-molded terracotta pendant on an adjustable black cord. A true statement piece.',
     specification: 'Baked terracotta clay, non-toxic colors. Pendant size: 2.5 inches.',
     isFeatured: true,
