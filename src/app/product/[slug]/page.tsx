@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useState, use } from "react";
-import { notFound, useRouter } from "next/navigation";
+import { notFound, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { products } from "@/lib/data";
 import { Button } from "@/components/ui/button";
@@ -12,14 +13,19 @@ import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/context/cart-context";
 import type { Product } from "@/types";
 
-export default function ProductDetailPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+function useProduct() {
+  const params = use(useSearchParams() as any);
+  const product = products.find((p) => p.slug === params.slug);
+  return product;
+}
+
+export default function ProductDetailPage({ params }: { params: { slug: string } }) {
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const { addToCart } = useCart();
   const router = useRouter();
 
-  const params = use(paramsPromise);
   const product = products.find((p) => p.slug === params.slug);
 
   if (!product) {
