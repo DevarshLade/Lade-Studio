@@ -21,6 +21,7 @@ export default function CustomDesignPage() {
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [showContactButton, setShowContactButton] = useState(false);
 
     const filteredProducts = selectedCategory
         ? products.filter(p => p.category.toLowerCase().replace(/ /g, '-') === selectedCategory)
@@ -39,10 +40,19 @@ export default function CustomDesignPage() {
             title: "Request Submitted!",
             description: "Thank you for your custom design request. We will get back to you shortly.",
         });
-        (e.target as HTMLFormElement).reset();
-        setSelectedCategory('');
-        setSelectedProduct(null);
+        setShowContactButton(true);
+        // (e.target as HTMLFormElement).reset();
+        // setSelectedCategory('');
+        // setSelectedProduct(null);
     };
+
+    const handleContactClick = () => {
+        window.open(
+          'https://form.jotform.com/252305862627459',
+          'blank',
+          'scrollbars=yes,toolbar=no,width=700,height=500'
+        );
+    }
 
     return (
         <div className="container mx-auto px-4 py-12">
@@ -135,8 +145,16 @@ export default function CustomDesignPage() {
                                 <Label htmlFor="additional-details" className="text-lg font-headline">5. Additional Details</Label>
                                 <Textarea id="additional-details" name="details" placeholder="Describe your vision, colors, style, dimensions, or any other specific requirements." rows={5} />
                             </div>
+                            
+                            <div className="flex flex-col gap-4">
+                                <Button type="submit" size="lg" className="w-full">Submit Custom Request</Button>
+                                {showContactButton && (
+                                    <Button type="button" size="lg" variant="secondary" className="w-full" onClick={handleContactClick}>
+                                        Contact With Designer
+                                    </Button>
+                                )}
+                            </div>
 
-                            <Button type="submit" size="lg" className="w-full">Submit Custom Request</Button>
                         </form>
                     </CardContent>
                 </Card>
