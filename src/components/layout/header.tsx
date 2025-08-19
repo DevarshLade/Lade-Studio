@@ -48,10 +48,8 @@ const NavLinks = ({ className }: { className?: string }) => (
         <Link href={link.href}>{link.label}</Link>
       </Button>
     ))}
-    <Button variant="ghost" asChild>
-        <a href="javascript:void(window.open('https://form.jotform.com/252305862627459','blank','scrollbars=yes,toolbar=no,width=700,height=500'))">
-            Contact
-        </a>
+    <Button variant="ghost" onClick={() => window.open('https://form.jotform.com/252305862627459','blank','scrollbars=yes,toolbar=no,width=700,height=500')}>
+      Contact
     </Button>
   </nav>
 );
@@ -104,10 +102,8 @@ export default function Header() {
                       <Link href={link.href}>{link.label}</Link>
                     </Button>
                   ))}
-                   <Button variant="link" asChild className="text-lg">
-                        <a href="javascript:void(window.open('https://form.jotform.com/252305862627459','blank','scrollbars=yes,toolbar=no,width=700,height=500'))">
-                            Contact
-                        </a>
+                   <Button variant="link" className="text-lg" onClick={() => window.open('https://form.jotform.com/252305862627459','blank','scrollbars=yes,toolbar=no,width=700,height=500')}>
+                        Contact
                     </Button>
                 </nav>
                 <div className="mt-auto p-4 border-t">
