@@ -1,3 +1,6 @@
+
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -45,6 +48,11 @@ const NavLinks = ({ className }: { className?: string }) => (
         <Link href={link.href}>{link.label}</Link>
       </Button>
     ))}
+    <Button variant="ghost" asChild>
+        <a href="javascript:void(window.open('https://form.jotform.com/252305862627459','blank','scrollbars=yes,toolbar=no,width=700,height=500'))">
+            Contact
+        </a>
+    </Button>
   </nav>
 );
 
@@ -96,6 +104,11 @@ export default function Header() {
                       <Link href={link.href}>{link.label}</Link>
                     </Button>
                   ))}
+                   <Button variant="link" asChild className="text-lg">
+                        <a href="javascript:void(window.open('https://form.jotform.com/252305862627459','blank','scrollbars=yes,toolbar=no,width=700,height=500'))">
+                            Contact
+                        </a>
+                    </Button>
                 </nav>
                 <div className="mt-auto p-4 border-t">
                     <HeaderActions className="flex items-center justify-around" />
