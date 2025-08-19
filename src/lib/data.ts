@@ -66,7 +66,7 @@ export const products: Product[] = [
     category: 'Pots',
     price: 950,
     slug: 'sunset-bloom-pot',
-    images: ['https://placehold.co/600x600.png'],
+    images: ['https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEio7eYRHgWmZxU6_0oAHP28bbyrk0munEH7utINSHKAwuHd205mg2ObeOneutyFvW7ldKtUpRvgAhi7XHor8_MiqVc37bbQaBmGMs_XN9foCMydZOlWuUvhyjqO2zW6OKjAS0odISqwOy_E7aDgXzlDzeIluXr_5naI-B2m_6NVkIFlCHydSy0IyZV8dskK/s941/bb02773c-0367-4a4a-8502-85245114600a.png'],
     description: 'A vibrant pot painted with a floral design inspired by sunset hues.',
     specification: 'Ceramic, acrylic paint, gloss varnish. 6-inch diameter.',
     isFeatured: true,
