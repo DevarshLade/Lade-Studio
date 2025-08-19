@@ -30,7 +30,7 @@ export const products: Product[] = [
     price: 1200,
     originalPrice: 1500,
     slug: 'earthen-jar',
-    images: ['https://placehold.co/600x600.png'],
+    images: ['https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjGp7Q5fz5k5X9EPYigw0q4wjcOQ5kBaqe-yxNzS9AqUACphK3nqt0OlQVtDiVFfjy4aceK2ccuxT1YOCQMjYoHu1Q2_Nha7LSiBA2mcT64w6HqMvASW7q8xCHtjlugJ8LuwAAPqdD7YDA7bPn-nUID_l8eUIK2KFpOq8dnbMK9bCr6DZt8dQLc2TBH7Uh7/s1280/WhatsApp%20Image%202025-08-19%20at%209.43.50%20PM%20(1).jpeg'],
     description: 'A rustic terracotta pot hand-painted with traditional folk motifs. Perfect for indoor plants.',
     specification: 'Terracotta, acrylic paint, waterproof sealant. 8-inch diameter.',
     isFeatured: true,
