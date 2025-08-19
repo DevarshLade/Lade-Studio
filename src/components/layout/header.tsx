@@ -4,9 +4,10 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Search, ShoppingCart, User, Menu, Feather, ChevronDown } from "lucide-react";
+import { User, Menu, Feather, ChevronDown, ShoppingCart } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { categories } from "@/lib/data";
+import SearchDialog from "@/components/search-dialog";
 
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2">
@@ -56,10 +57,7 @@ const NavLinks = ({ className }: { className?: string }) => (
 
 const HeaderActions = ({ className }: { className?: string }) => (
   <div className={className}>
-    <Button variant="ghost" size="icon">
-      <Search className="h-5 w-5" />
-      <span className="sr-only">Search</span>
-    </Button>
+    <SearchDialog />
     <Button variant="ghost" size="icon" asChild>
       <Link href="/my-account">
         <User className="h-5 w-5" />
