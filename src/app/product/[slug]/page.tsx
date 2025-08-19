@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { products } from "@/lib/data";
@@ -11,11 +11,12 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ArtworkSuggestions } from "./artwork-suggestions";
 import { useToast } from "@/hooks/use-toast";
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+export default function ProductDetailPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
 
+  const params = use(paramsPromise);
   const product = products.find((p) => p.slug === params.slug);
 
   if (!product) {
