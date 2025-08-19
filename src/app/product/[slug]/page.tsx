@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from "react";
-import { notFound, useRouter } from "next/navigation";
+import { useState, use } from "react";
+import { notFound, useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { products } from "@/lib/data";
 import { Button } from "@/components/ui/button";
@@ -129,4 +129,3 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     </div>
   );
 }
-
