@@ -1,9 +1,13 @@
+
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, MapPin, Phone } from "lucide-react";
+import Script from "next/script";
 
 export default function ContactPage() {
   return (
@@ -58,25 +62,10 @@ export default function ContactPage() {
                 <CardTitle className="font-headline text-2xl">Send a Message</CardTitle>
               </CardHeader>
               <CardContent>
-                <form className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Your Name</Label>
-                    <Input id="name" placeholder="John Doe" />
-                  </div>
-                   <div className="space-y-2">
-                    <Label htmlFor="email">Your Email</Label>
-                    <Input id="email" type="email" placeholder="john.doe@example.com" />
-                  </div>
-                   <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" placeholder="Question about an order" />
-                  </div>
-                   <div className="space-y-2">
-                    <Label htmlFor="message">Your Message</Label>
-                    <Textarea id="message" placeholder="Type your message here..." rows={5} />
-                  </div>
-                  <Button type="submit" size="lg" className="w-full">Send Message</Button>
-                </form>
+                <Script
+                  type="text/javascript"
+                  src="https://form.jotform.com/jsform/252305862627459"
+                />
               </CardContent>
             </Card>
           </div>
