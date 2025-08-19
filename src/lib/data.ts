@@ -1,9 +1,9 @@
 import type { Product, Category, Testimonial, BlogPost } from "@/types";
 
 export const categories: Category[] = [
-  { name: 'Painting', image: 'https://placehold.co/400x500.png', hint: 'abstract painting' },
-  { name: 'Pots', image: 'https://placehold.co/400x500.png', hint: 'painted pot' },
-  { name: 'Canvas', image: 'https://placehold.co/400x500.png', hint: 'artist canvas' },
+  { name: 'Painting', image: 'https://images.unsplash.com/photo-1579541814924-49fef17c5be5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwYWludGluZ3xlbnwwfHx8fDE3NTU2MjA5NzN8MA&ixlib=rb-4.1.0&q=80&w=1080', hint: 'abstract painting' },
+  { name: 'Pots', image: 'https://images.unsplash.com/photo-1536266305399-b367feb671f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxQb3RzfGVufDB8fHx8MTc1NTYyMTAwMHww&ixlib=rb-4.1.0&q=80&w=1080', hint: 'painted pot' },
+  { name: 'Canvas', image: 'https://images.unsplash.com/photo-1577720643272-265f09367456?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxDYW52YXMlMjBwYWludGluZ3xlbnwwfHx8fDE3NTU2MjEwMzJ8MA&ixlib=rb-4.1.0&q=80&w=1080', hint: 'artist canvas' },
   { name: 'Hand Painted Jewelry', image: 'https://placehold.co/400x500.png', hint: 'terracotta necklace' },
   { name: 'Terracotta Pots', image: 'https://placehold.co/400x500.png', hint: 'terracotta pot' },
   { name: 'Fabric Painting', image: 'https://placehold.co/400x500.png', hint: 'painted fabric' },
