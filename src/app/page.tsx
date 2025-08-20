@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,8 @@ export default function Home() {
         <Image
           src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgGVgAMpigIHSkXgx34IditgJ5aqG7aV5hxnpyzQzAsMPf_LVqPSNxsDbxiYblxab2szl-a5lzKkkDrwHTs0KerABmiQXJUBVPAiis8NKGT7WJV-1jSUNj7Z4Or8EhDj3FWCeFxDUHowLrsd1kyIdAx9Ci1gpNiM6MXalrDeY5VgvpS7itkBesuhxrcqoEf/s4008/654fe177-8f99-444a-9cf3-0abf779567d9%20(1).png"
           alt="Artist at work"
-          layout="fill"
-          objectFit="cover"
+          fill
+          style={{objectFit: 'cover'}}
           className="z-0"
           data-ai-hint="artist workspace"
         />
