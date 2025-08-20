@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, use } from "react";
+import { useState } from "react";
 import { notFound, useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { products } from "@/lib/data";
@@ -32,7 +32,7 @@ function StarRating({ rating, onRatingChange, readOnly = false }: { rating: numb
 }
 
 function ProductReviews() {
-  const params = use(useParams());
+  const params = useParams();
   const product = products.find((p) => p.slug === params.slug);
   const { toast } = useToast();
   const [newRating, setNewRating] = useState(0);
@@ -49,6 +49,10 @@ function ProductReviews() {
     (e.target as HTMLFormElement).reset();
     setNewRating(0);
   };
+
+  if (!product) {
+    return null;
+  }
 
   return (
     <div className="mt-16 md:mt-24">
@@ -120,7 +124,7 @@ function ProductReviews() {
 
 
 export default function ProductDetailPage() {
-  const params = use(useParams());
+  const params = useParams();
   const product = products.find((p) => p.slug === params.slug);
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
@@ -242,3 +246,5 @@ export default function ProductDetailPage() {
     </div>
   );
 }
+
+    
