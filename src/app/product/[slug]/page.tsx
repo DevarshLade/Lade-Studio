@@ -6,13 +6,121 @@ import { notFound, useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { products } from "@/lib/data";
 import { Button } from "@/components/ui/button";
-import { Heart, Minus, Plus, ShoppingCart } from "lucide-react";
+import { Heart, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ArtworkSuggestions } from "./artwork-suggestions";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/context/cart-context";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+function StarRating({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={`h-5 w-5 ${rating >= star ? 'text-primary fill-primary' : 'text-muted-foreground'} ${!readOnly && 'cursor-pointer'}`}
+          onClick={() => onRatingChange && onRatingChange(star)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ProductReviews() {
+  const params = use(useParams());
+  const product = products.find((p) => p.slug === params.slug);
+  const { toast } = useToast();
+  const [newRating, setNewRating] = useState(0);
+
+  const averageRating = product?.reviews ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length : 0;
+  
+  const handleReviewSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // In a real app, you would submit this data to your backend
+    toast({
+      title: "Review Submitted!",
+      description: "Thank you for your feedback.",
+    });
+    (e.target as HTMLFormElement).reset();
+    setNewRating(0);
+  };
+
+  return (
+    <div className="mt-16 md:mt-24">
+      <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">Ratings & Reviews</h2>
+      <div className="grid md:grid-cols-2 gap-12">
+        {/* Existing Reviews */}
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-headline flex items-center gap-4">
+                <span>{product?.reviews?.length || 0} Reviews</span>
+                {product?.reviews && product.reviews.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <StarRating rating={averageRating} readOnly />
+                    <span className="text-lg font-bold text-primary">{averageRating.toFixed(1)}</span>
+                  </div>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 max-h-96 overflow-y-auto">
+              {product?.reviews && product.reviews.length > 0 ? (
+                product.reviews.map(review => (
+                  <div key={review.id}>
+                    <div className="flex items-center justify-between mb-2">
+                       <div className="flex items-center gap-2">
+                        <p className="font-semibold">{review.name}</p>
+                        <StarRating rating={review.rating} readOnly />
+                       </div>
+                      <p className="text-sm text-muted-foreground">{review.date}</p>
+                    </div>
+                    <p className="text-muted-foreground">{review.comment}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-center py-8">No reviews yet. Be the first to share your thoughts!</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+        {/* Add a Review Form */}
+        <div>
+           <Card>
+            <CardHeader>
+              <CardTitle className="font-headline">Write a Review</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form className="space-y-4" onSubmit={handleReviewSubmit}>
+                <div className="space-y-2">
+                  <Label>Your Rating</Label>
+                  <StarRating rating={newRating} onRatingChange={setNewRating} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="review-name">Your Name</Label>
+                  <Input id="review-name" placeholder="Your name" required/>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="review-comment">Your Review</Label>
+                  <Textarea id="review-comment" placeholder="Share your thoughts about the product..." rows={4} required/>
+                </div>
+                <Button type="submit" className="w-full">Submit Review</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+export default function ProductDetailPage() {
+  const params = use(useParams());
   const product = products.find((p) => p.slug === params.slug);
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
@@ -123,6 +231,11 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           </Accordion>
         </div>
       </div>
+
+      <Separator className="my-16" />
+      
+      {/* Ratings and Reviews Section */}
+      <ProductReviews />
       
       {/* Similar Artwork Section */}
       <ArtworkSuggestions currentArtworkId={product.id} />

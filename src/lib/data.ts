@@ -22,7 +22,11 @@ export const products: Product[] = [
     description: 'An abstract exploration of the night sky, blending deep blues with shimmering gold accents.',
     specification: 'Acrylic on canvas, 24x36 inches. Varnished for protection.',
     isFeatured: true,
-    aiHint: 'abstract painting'
+    aiHint: 'abstract painting',
+    reviews: [
+      { id: 'rev-1', name: 'Aarav Patel', rating: 5, comment: 'Absolutely stunning piece of art. It looks even better in person!', date: '2023-08-15' },
+      { id: 'rev-2', name: 'Sanya Gupta', rating: 4, comment: 'Beautiful painting, but the colors are slightly different from the photos. Still love it though.', date: '2023-08-12' },
+    ]
   },
   {
     id: 'prod-2',
@@ -35,7 +39,10 @@ export const products: Product[] = [
     description: 'A rustic terracotta pot hand-painted with traditional folk motifs. Perfect for indoor plants.',
     specification: 'Terracotta, acrylic paint, waterproof sealant. 8-inch diameter.',
     isFeatured: true,
-    aiHint: 'painted pot'
+    aiHint: 'painted pot',
+     reviews: [
+      { id: 'rev-3', name: 'Rohan Mehta', rating: 5, comment: 'The craftsmanship is amazing. A perfect addition to my garden.', date: '2023-07-20' },
+    ]
   },
   {
     id: 'prod-3',

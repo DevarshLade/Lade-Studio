@@ -1,3 +1,11 @@
+export type Review = {
+  id: string;
+  name: string;
+  rating: number; // 1-5
+  comment: string;
+  date: string;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -11,6 +19,7 @@ export type Product = {
   size?: string;
   isFeatured?: boolean;
   aiHint: string;
+  reviews?: Review[];
 };
 
 export type Category = {
