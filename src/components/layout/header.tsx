@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { User, Menu, Feather, ChevronDown, ShoppingCart } from "lucide-react";
+import { User, Menu, Feather, ChevronDown, ShoppingCart, Heart } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { categories } from "@/lib/data";
 import SearchDialog from "@/components/search-dialog";
@@ -68,6 +68,12 @@ const HeaderActions = ({ className }: { className?: string }) => (
       </Link>
     </Button>
     <Button variant="ghost" size="icon" asChild>
+      <Link href="/wishlist">
+        <Heart className="h-5 w-5" />
+        <span className="sr-only">Wishlist</span>
+      </Link>
+    </Button>
+    <Button variant="ghost" size="icon" asChild>
       <Link href="/cart">
         <ShoppingCart className="h-5 w-5" />
         <span className="sr-only">Shopping Cart</span>
@@ -92,8 +98,8 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0">
-              <SheetHeader className="p-4 border-b text-left">
-                <SheetTitle><Logo /></SheetTitle>
+              <SheetHeader className="p-4 border-b">
+                 <SheetTitle className="text-left"><Logo /></SheetTitle>
               </SheetHeader>
               <div className="flex flex-col h-full">
                 <nav className="flex flex-col items-start gap-2 p-4">

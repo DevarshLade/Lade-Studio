@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { notFound, useRouter, useParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
 import { products } from "@/lib/data";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useWishlist } from "@/context/wishlist-context";
 
 function StarRating({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
   return (
@@ -128,14 +129,16 @@ export default function ProductDetailPage() {
   const product = products.find((p) => p.slug === params.slug);
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(false);
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const router = useRouter();
 
 
   if (!product) {
     notFound();
   }
+  
+  const isFavorite = isInWishlist(product.id);
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
@@ -151,11 +154,7 @@ export default function ProductDetailPage() {
   };
 
   const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    toast({
-      title: isFavorite ? "Removed from Wishlist" : "Added to Wishlist",
-      description: product.name,
-    });
+    toggleWishlist(product.id);
   };
 
   return (
@@ -246,5 +245,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
-    
