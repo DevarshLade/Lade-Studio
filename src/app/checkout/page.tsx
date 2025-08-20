@@ -10,6 +10,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCart } from "@/context/cart-context";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 function AddressForm() {
     return (
@@ -17,62 +21,141 @@ function AddressForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="Your full name" />
+                    <Input id="name" placeholder="Your full name" required/>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" placeholder="Your phone number" />
+                    <Input id="phone" placeholder="Your phone number" required/>
                 </div>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" placeholder="Street address, apartment, etc." />
+                <Input id="address" placeholder="Street address, apartment, etc." required/>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="city">City</Label>
-                    <Input id="city" placeholder="City" />
+                    <Input id="city" placeholder="City" required/>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="state">State</Label>
-                    <Input id="state" placeholder="State" />
+                    <Input id="state" placeholder="State" required/>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="pincode">Pincode</Label>
-                    <Input id="pincode" placeholder="Pincode" />
+                    <Input id="pincode" placeholder="Pincode" required/>
                 </div>
             </div>
         </div>
     );
 }
 
-function PaymentOptions() {
+function PaymentOptions({ selectedMethod, onMethodChange } : { selectedMethod: string, onMethodChange: (value: string) => void }) {
     return (
-        <RadioGroup defaultValue="cod">
+        <RadioGroup value={selectedMethod} onValueChange={onMethodChange}>
             <Label className="text-lg font-headline mb-4 block">Payment Method</Label>
             <div className="space-y-4">
-                <Card className="p-4 flex items-center gap-4">
-                    <RadioGroupItem value="stripe" id="stripe" />
-                    <Label htmlFor="stripe" className="flex-grow font-medium">Credit/Debit Card (Stripe)</Label>
-                </Card>
-                 <Card className="p-4 flex items-center gap-4">
+                <Label htmlFor="razorpay" className="p-4 flex items-center gap-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                     <RadioGroupItem value="razorpay" id="razorpay" />
-                    <Label htmlFor="razorpay" className="flex-grow font-medium">UPI / Netbanking (Razorpay)</Label>
-                </Card>
-                <Card className="p-4 flex items-center gap-4">
+                    <span className="flex-grow font-medium">Online Payment (Razorpay)</span>
+                    <span className="text-sm text-muted-foreground">Credit/Debit Card, UPI, Netbanking</span>
+                </Label>
+                <Label htmlFor="cod" className="p-4 flex items-center gap-4 border rounded-lg cursor-pointer has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                     <RadioGroupItem value="cod" id="cod" />
-                    <Label htmlFor="cod" className="flex-grow font-medium">Cash on Delivery</Label>
-                </Card>
+                    <span className="flex-grow font-medium">Cash on Delivery</span>
+                </Label>
             </div>
         </RadioGroup>
     );
 }
 
 export default function CheckoutPage() {
-    const { cartItems } = useCart();
+    const { cartItems, clearCart } = useCart();
+    const { toast } = useToast();
+    const router = useRouter();
+    const [paymentMethod, setPaymentMethod] = useState("razorpay");
+    const [isLoading, setIsLoading] = useState(false);
+
     const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const shipping = 150;
     const total = subtotal + shipping;
+
+    // This function loads the Razorpay script
+    const loadScript = (src: string) => {
+        return new Promise((resolve) => {
+            const script = document.createElement("script");
+            script.src = src;
+            script.onload = () => {
+                resolve(true);
+            };
+            script.onerror = () => {
+                resolve(false);
+            };
+            document.body.appendChild(script);
+        });
+    };
+
+    const handlePlaceOrder = async () => {
+        setIsLoading(true);
+        if (paymentMethod === 'cod') {
+            // Handle Cash on Delivery logic
+            toast({ title: "Order Placed!", description: "Your order has been successfully placed with Cash on Delivery." });
+            clearCart();
+            router.push('/my-account');
+            setIsLoading(false);
+            return;
+        }
+
+        // Handle Razorpay logic
+        const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+        if (!res) {
+            toast({ title: "Error", description: "Razorpay SDK failed to load. Are you online?", variant: "destructive" });
+            setIsLoading(false);
+            return;
+        }
+
+        // YOU WILL NEED TO CREATE THIS SERVER ACTION
+        // This action will securely create an order on Razorpay's servers
+        // and return the order details.
+        
+        // Mocking order creation for now
+        const orderAmount = total * 100; // Amount in paise
+        const options = {
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // YOUR RAZORPAY KEY ID
+            amount: orderAmount.toString(),
+            currency: "INR",
+            name: "Lade Studio",
+            description: "Artwork Purchase",
+            // order_id: from your server action,
+            handler: function (response: any) {
+                // On successful payment
+                toast({ title: "Payment Successful!", description: "Thank you for your order." });
+                console.log(response);
+                clearCart();
+                router.push('/my-account');
+            },
+            prefill: {
+                // You can prefill customer details here
+                name: "Your Customer",
+                email: "customer@example.com",
+                contact: "9999999999",
+            },
+            theme: {
+                color: "#A87C7C",
+            },
+        };
+
+        const paymentObject = new (window as any).Razorpay(options);
+        paymentObject.open();
+
+        paymentObject.on('payment.failed', function (response: any) {
+            toast({ title: "Payment Failed", description: "Please try again.", variant: "destructive" });
+            console.error(response.error);
+        });
+        
+        setIsLoading(false);
+    };
+
 
     return (
         <div className="container mx-auto px-4 py-12">
@@ -101,7 +184,7 @@ export default function CheckoutPage() {
                                 <CardTitle className="font-headline text-2xl">2. Confirm Payment</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <PaymentOptions />
+                                <PaymentOptions selectedMethod={paymentMethod} onMethodChange={setPaymentMethod} />
                             </CardContent>
                         </Card>
                     </div>
@@ -145,7 +228,9 @@ export default function CheckoutPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                        <Button size="lg" className="w-full">Place Order</Button>
+                        <Button size="lg" className="w-full" onClick={handlePlaceOrder} disabled={isLoading}>
+                            {isLoading ? 'Processing...' : 'Place Order'}
+                        </Button>
                         </CardFooter>
                     </Card>
                     </div>
