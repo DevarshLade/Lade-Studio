@@ -1,7 +1,7 @@
 
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import type { Product } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { products } from '@/lib/data';
@@ -46,27 +46,26 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     setWishlistItems(items);
   }, [wishlistIds]);
 
-  const toggleWishlist = (productId: string) => {
-    setWishlistIds(prevIds => {
-      const product = products.find(p => p.id === productId);
-      if (!product) return prevIds;
+  const toggleWishlist = useCallback((productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
 
-      const isInWishlist = prevIds.includes(productId);
-      if (isInWishlist) {
-        toast({
-            title: "Removed from Wishlist",
-            description: `${product.name} has been removed from your wishlist.`
-        });
-        return prevIds.filter(id => id !== productId);
-      } else {
-        toast({
-            title: "Added to Wishlist",
-            description: `${product.name} has been added to your wishlist.`
-        });
-        return [...prevIds, productId];
-      }
-    });
-  };
+    const isInWishlist = wishlistIds.includes(productId);
+
+    if (isInWishlist) {
+      setWishlistIds(prevIds => prevIds.filter(id => id !== productId));
+      toast({
+          title: "Removed from Wishlist",
+          description: `${product.name} has been removed from your wishlist.`
+      });
+    } else {
+      setWishlistIds(prevIds => [...prevIds, productId]);
+      toast({
+          title: "Added to Wishlist",
+          description: `${product.name} has been added to your wishlist.`
+      });
+    }
+  }, [wishlistIds, toast]);
   
   const isInWishlist = (productId: string) => {
     return wishlistIds.includes(productId);
