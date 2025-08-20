@@ -8,7 +8,6 @@ import { products } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Heart, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ArtworkSuggestions } from "./artwork-suggestions";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/context/cart-context";
 import { Separator } from "@/components/ui/separator";
@@ -17,6 +16,30 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useWishlist } from "@/context/wishlist-context";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const ArtworkSuggestions = dynamic(
+  () => import('./artwork-suggestions').then(mod => mod.ArtworkSuggestions),
+  {
+    loading: () => (
+      <div className="mt-16 md:mt-24">
+        <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">You Might Also Like</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {Array.from({length: 4}).map((_, i) => (
+            <div key={i} className="space-y-4">
+              <Skeleton className="h-64 w-full" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-6 w-1/4" />
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+    ssr: false
+  }
+);
+
 
 function StarRating({ rating, onRatingChange, readOnly = false }: { rating: number, onRatingChange?: (rating: number) => void, readOnly?: boolean }) {
   return (
@@ -170,6 +193,7 @@ export default function ProductDetailPage() {
               height={600}
               className="w-full h-full object-cover"
               data-ai-hint={product.aiHint}
+              priority
             />
           </div>
           <div className="grid grid-cols-4 gap-4">

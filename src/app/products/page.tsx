@@ -1,4 +1,10 @@
-import { products } from "@/lib/data";
+
+"use client";
+
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { products, categories } from "@/lib/data";
+import type { Product } from "@/types";
 import ProductCard from "@/components/product-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -7,7 +13,29 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 
-function ProductFilters() {
+const SIZES = ["Small", "Medium", "Large"];
+
+function ProductFilters({ onFilterChange }: { onFilterChange: (filters: any) => void }) {
+  const searchParams = useSearchParams();
+  const [category, setCategory] = useState(searchParams.get('category') || 'all');
+  const [priceRange, setPriceRange] = useState([0, 10000]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  
+  const handleSizeChange = (size: string) => {
+    setSelectedSizes(prev => 
+      prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
+    );
+  };
+
+  const applyFilters = () => {
+    onFilterChange({ category, priceRange, sizes: selectedSizes });
+  };
+  
+  useEffect(() => {
+    applyFilters();
+  }, [category, priceRange, selectedSizes]);
+
+
   return (
     <Card>
       <CardHeader>
@@ -17,43 +45,17 @@ function ProductFilters() {
         {/* Category Filter */}
         <div className="space-y-4">
           <Label className="text-lg font-headline">Category</Label>
-          <RadioGroup defaultValue="all">
+          <RadioGroup value={category} onValueChange={setCategory}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="all" id="cat-all" />
               <Label htmlFor="cat-all">All</Label>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="painting" id="cat-painting" />
-              <Label htmlFor="cat-painting">Painting</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="pots" id="cat-pots" />
-              <Label htmlFor="cat-pots">Pots</Label>
-            </div>
-             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="canvas" id="cat-canvas" />
-              <Label htmlFor="cat-canvas">Canvas</Label>
-            </div>
-             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="hand-painted-jewelry" id="cat-hand-painted-jewelry" />
-              <Label htmlFor="cat-hand-painted-jewelry">Hand Painted Jewelry</Label>
-            </div>
-             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="terracotta-pots" id="cat-terracotta-pots" />
-              <Label htmlFor="cat-terracotta-pots">Terracotta Pots</Label>
-            </div>
-             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="fabric-painting" id="cat-fabric-painting" />
-              <Label htmlFor="cat-fabric-painting">Fabric Painting</Label>
-            </div>
-             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="portrait" id="cat-portrait" />
-              <Label htmlFor="cat-portrait">Portrait</Label>
-            </div>
-             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="wall-hanging" id="cat-wall-hanging" />
-              <Label htmlFor="cat-wall-hanging">Wall Hanging</Label>
-            </div>
+            {categories.map(cat => (
+                <div className="flex items-center space-x-2" key={cat.name}>
+                    <RadioGroupItem value={cat.name.toLowerCase().replace(/ /g, '-')} id={`cat-${cat.name.toLowerCase().replace(/ /g, '-')}`} />
+                    <Label htmlFor={`cat-${cat.name.toLowerCase().replace(/ /g, '-')}`}>{cat.name}</Label>
+                </div>
+            ))}
           </RadioGroup>
         </div>
 
@@ -61,50 +63,69 @@ function ProductFilters() {
         <div className="space-y-4">
           <Label className="text-lg font-headline">Price Range</Label>
           <div className="flex justify-between text-sm text-muted-foreground">
-            <span>₹0</span>
-            <span>₹10,000</span>
+            <span>₹{priceRange[0]}</span>
+            <span>₹{priceRange[1]}</span>
           </div>
-          <Slider defaultValue={[0, 10000]} max={10000} step={100} />
+          <Slider 
+            defaultValue={priceRange} 
+            max={10000} 
+            step={100} 
+            onValueCommit={setPriceRange}
+          />
         </div>
 
         {/* Size Filter */}
         <div className="space-y-4">
           <Label className="text-lg font-headline">Size</Label>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="size-small" />
-            <Label htmlFor="size-small">Small</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="size-medium" />
-            <Label htmlFor="size-medium">Medium</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="size-large" />
-            <Label htmlFor="size-large">Large</Label>
-          </div>
+          {SIZES.map(size => (
+            <div className="flex items-center space-x-2" key={size}>
+              <Checkbox id={`size-${size.toLowerCase()}`} onCheckedChange={() => handleSizeChange(size)} />
+              <Label htmlFor={`size-${size.toLowerCase()}`}>{size}</Label>
+            </div>
+          ))}
         </div>
         
-        <Button className="w-full">Apply Filters</Button>
+        <Button className="w-full" onClick={applyFilters}>Apply Filters</Button>
       </CardContent>
     </Card>
   );
 }
 
 export default function ProductsPage() {
+  const [filters, setFilters] = useState({
+    category: 'all',
+    priceRange: [0, 10000],
+    sizes: [],
+  });
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const categoryMatch = filters.category === 'all' || product.category.toLowerCase().replace(/ /g, '-') === filters.category;
+      const priceMatch = product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1];
+      const sizeMatch = filters.sizes.length === 0 || (product.size && filters.sizes.includes(product.size));
+      
+      return categoryMatch && priceMatch && sizeMatch;
+    });
+  }, [filters]);
+
   return (
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-4xl md:text-5xl font-headline text-center mb-12">Our Collection</h1>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <aside className="md:col-span-1">
           <div className="sticky top-20">
-            <ProductFilters />
+            <ProductFilters onFilterChange={setFilters} />
           </div>
         </aside>
         <main className="md:col-span-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            ) : (
+                <p className="col-span-full text-center text-muted-foreground">No products match the selected filters.</p>
+            )}
           </div>
         </main>
       </div>
