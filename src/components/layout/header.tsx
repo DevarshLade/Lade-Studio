@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { User, Menu, Feather, ChevronDown, ShoppingCart } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { categories } from "@/lib/data";
@@ -91,11 +91,11 @@ export default function Header() {
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0">
+              <SheetHeader className="p-4 border-b text-left">
+                <SheetTitle><Logo /></SheetTitle>
+              </SheetHeader>
               <div className="flex flex-col h-full">
-                <div className="p-4 border-b">
-                  <Logo />
-                </div>
                 <nav className="flex flex-col items-start gap-2 p-4">
                   <ShopDropdown />
                   <Button variant="link" asChild className="text-lg">
