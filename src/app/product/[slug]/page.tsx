@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { products } from "@/lib/data";
@@ -155,6 +155,11 @@ export default function ProductDetailPage() {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
 
   if (!product) {
@@ -238,7 +243,7 @@ export default function ProductDetailPage() {
             </Button>
             <Button size="lg" variant="secondary" className="flex-1" onClick={handleBuyNow}>Buy Now</Button>
             <Button size="lg" variant="outline" className="px-4" onClick={handleFavorite}>
-              <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+              {isMounted && <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />}
             </Button>
           </div>
 
