@@ -1,13 +1,17 @@
 
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { User, Menu, Feather, ChevronDown, ShoppingCart, Heart } from "lucide-react";
+import { User, Menu, Feather, ChevronDown, ShoppingCart, Heart, LogIn } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { categories } from "@/lib/data";
 import SearchDialog from "@/components/search-dialog";
+import { useAuthContext } from "@/context/AuthContext";
+import { UserMenu } from "@/components/auth/UserMenu";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2">
@@ -58,29 +62,46 @@ const NavLinks = ({ className }: { className?: string }) => (
   </nav>
 );
 
-const HeaderActions = ({ className }: { className?: string }) => (
-  <div className={className}>
-    <SearchDialog />
-    <Button variant="ghost" size="icon" asChild>
-      <Link href="/my-account">
-        <User className="h-5 w-5" />
-        <span className="sr-only">My Account</span>
-      </Link>
-    </Button>
-    <Button variant="ghost" size="icon" asChild>
-      <Link href="/wishlist">
-        <Heart className="h-5 w-5" />
-        <span className="sr-only">Wishlist</span>
-      </Link>
-    </Button>
-    <Button variant="ghost" size="icon" asChild>
-      <Link href="/cart">
-        <ShoppingCart className="h-5 w-5" />
-        <span className="sr-only">Shopping Cart</span>
-      </Link>
-    </Button>
-  </div>
-);
+const HeaderActions = ({ className }: { className?: string }) => {
+  const { isAuthenticated } = useAuthContext();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  return (
+    <>
+      <div className={className}>
+        <SearchDialog />
+        {isAuthenticated ? (
+          <UserMenu />
+        ) : (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setShowAuthModal(true)}
+          >
+            <LogIn className="h-5 w-5" />
+            <span className="sr-only">Sign In</span>
+          </Button>
+        )}
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/wishlist">
+            <Heart className="h-5 w-5" />
+            <span className="sr-only">Wishlist</span>
+          </Link>
+        </Button>
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/cart">
+            <ShoppingCart className="h-5 w-5" />
+            <span className="sr-only">Shopping Cart</span>
+          </Link>
+        </Button>
+      </div>
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
+    </>
+  );
+};
 
 export default function Header() {
   return (

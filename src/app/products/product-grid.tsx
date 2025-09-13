@@ -3,7 +3,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { products, categories } from "@/lib/data";
+import { getProducts } from "@/lib/api/products";
+import { categories } from "@/lib/data";
 import type { Product } from "@/types";
 import ProductCard from "@/components/product-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,21 +94,86 @@ function ProductFilters({ onFilterChange }: { onFilterChange: (filters: any) => 
 }
 
 export default function ProductGrid() {
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    category: string;
+    priceRange: number[];
+    sizes: string[];
+  }>({
     category: 'all',
     priceRange: [0, 10000],
     sizes: [],
   });
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch products from Supabase
+  useEffect(() => {
+    async function fetchProducts() {
+      setLoading(true);
+      setError(null);
+      
+      const categoryFilter = filters.category !== 'all' 
+        ? filters.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        : undefined;
+      
+      const { data, error } = await getProducts({
+        category: categoryFilter,
+        limit: 100 // Fetch more products for filtering
+      });
+      
+      if (error) {
+        setError(error.message);
+      } else {
+        setProducts(data || []);
+      }
+      
+      setLoading(false);
+    }
+    
+    fetchProducts();
+  }, [filters.category]);
 
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
-      const categoryMatch = filters.category === 'all' || product.category.toLowerCase().replace(/ /g, '-') === filters.category;
       const priceMatch = product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1];
       const sizeMatch = filters.sizes.length === 0 || (product.size && filters.sizes.includes(product.size));
       
-      return categoryMatch && priceMatch && sizeMatch;
+      return priceMatch && sizeMatch;
     });
-  }, [filters]);
+  }, [products, filters.priceRange, filters.sizes]);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <aside className="md:col-span-1">
+          <div className="sticky top-20">
+            <ProductFilters onFilterChange={setFilters} />
+          </div>
+        </aside>
+        <main className="md:col-span-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div key={i} className="space-y-4">
+                <div className="h-64 w-full bg-gray-200 animate-pulse rounded"></div>
+                <div className="h-6 w-3/4 bg-gray-200 animate-pulse rounded"></div>
+                <div className="h-6 w-1/4 bg-gray-200 animate-pulse rounded"></div>
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500 mb-4">Error loading products: {error}</p>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
 
   return (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

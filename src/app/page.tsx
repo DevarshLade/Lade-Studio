@@ -7,11 +7,19 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { products, testimonials, blogPosts, categories } from "@/lib/data";
+import { getFeaturedProducts, getProducts } from "@/lib/api/products";
+import { testimonials, blogPosts, categories } from "@/lib/data";
 import { ArrowRight, ShoppingCart } from "lucide-react";
 import ProductCard from "@/components/product-card";
 
-export default function Home() {
+export default async function Home() {
+  // Fetch featured products from Supabase
+  const { data: featuredProducts } = await getFeaturedProducts(8);
+  
+  // Fetch products with original prices (discounted items)
+  const { data: allProducts } = await getProducts({ limit: 20 });
+  const discountedProducts = allProducts?.filter(p => p.originalPrice) || [];
+  
   const homeCategories = categories.slice(0, 3);
   return (
     <div className="flex flex-col">
@@ -64,7 +72,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">Featured Collections</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {products.filter(p => p.isFeatured).slice(0, 8).map((product) => (
+            {featuredProducts?.slice(0, 8).map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
@@ -77,7 +85,7 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">Discount on Original Artworks</h2>
           <Carousel opts={{ loop: true, align: "start" }} className="w-full">
             <CarouselContent className="-ml-4">
-              {products.filter(p => p.originalPrice).map((product) => (
+              {discountedProducts.map((product) => (
                 <CarouselItem key={product.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
                   <div className="p-1">
                     <ProductCard product={product} />

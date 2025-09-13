@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { artworkSuggestions, ArtworkSuggestionsInput } from "@/ai/flows/artwork-suggestions";
-import { products } from "@/lib/data";
+import { getProducts } from "@/lib/api/products";
 import type { Product } from "@/types";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import ProductCard from "@/components/product-card";
@@ -17,6 +17,15 @@ export function ArtworkSuggestions({ currentArtworkId }: { currentArtworkId: str
     async function getSuggestions() {
       setLoading(true);
       try {
+        // Fetch products from database
+        const { data: allProducts } = await getProducts({ limit: 20 });
+        
+        if (!allProducts || allProducts.length === 0) {
+          setSuggestedProducts([]);
+          setLoading(false);
+          return;
+        }
+
         // In a real app, viewing and purchase history would come from user data.
         const userViewingHistory = ['prod-2', 'prod-5'];
         const userPurchaseHistory = ['prod-7'];
@@ -29,13 +38,12 @@ export function ArtworkSuggestions({ currentArtworkId }: { currentArtworkId: str
 
         const result = await artworkSuggestions(input);
         
-        // In a real app, you would fetch these products from your database.
-        // Here we filter the mock data.
-        const suggestions = products.filter(p => result.suggestedArtworkIds.includes(p.id));
+        // Filter products from database based on AI suggestions
+        const suggestions = allProducts.filter(p => result.suggestedArtworkIds.includes(p.id));
         
         // Fallback to random products if AI gives no suggestions
         if (suggestions.length === 0) {
-            const fallback = products
+            const fallback = allProducts
                 .filter(p => p.id !== currentArtworkId)
                 .sort(() => 0.5 - Math.random())
                 .slice(0, 5);
@@ -45,11 +53,22 @@ export function ArtworkSuggestions({ currentArtworkId }: { currentArtworkId: str
         }
       } catch (error) {
         console.error("Error fetching artwork suggestions:", error);
-         const fallback = products
-            .filter(p => p.id !== currentArtworkId)
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 5);
-        setSuggestedProducts(fallback);
+        // Fallback to fetching random products from database
+        try {
+          const { data: allProducts } = await getProducts({ limit: 10 });
+          if (allProducts && allProducts.length > 0) {
+            const fallback = allProducts
+              .filter(p => p.id !== currentArtworkId)
+              .sort(() => 0.5 - Math.random())
+              .slice(0, 5);
+            setSuggestedProducts(fallback);
+          } else {
+            setSuggestedProducts([]);
+          }
+        } catch (fallbackError) {
+          console.error("Error fetching fallback products:", fallbackError);
+          setSuggestedProducts([]);
+        }
       } finally {
         setLoading(false);
       }
@@ -70,6 +89,11 @@ export function ArtworkSuggestions({ currentArtworkId }: { currentArtworkId: str
                     <Skeleton className="h-6 w-1/4" />
                 </div>
             ))}
+        </div>
+      ) : suggestedProducts.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground text-lg">No related products available at the moment.</p>
+          <p className="text-muted-foreground">Check back later for new arrivals!</p>
         </div>
       ) : (
         <Carousel opts={{ loop: true, align: "start" }} className="w-full">

@@ -10,40 +10,96 @@ import Image from "next/image";
 import Link from "next/link";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCart } from "@/context/cart-context";
+import { useAuthContext } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { createOrder } from "@/lib/api/orders";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import type { CheckoutData } from "@/types";
 
 
-function AddressForm() {
+function AddressForm({ formData, setFormData }: { 
+    formData: CheckoutData; 
+    setFormData: (data: CheckoutData) => void; 
+}) {
+    const handleInputChange = (field: keyof CheckoutData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [field]: e.target.value });
+    };
+
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="Your full name" required/>
+                    <Input 
+                        id="name" 
+                        placeholder="Your full name" 
+                        value={formData.customerName}
+                        onChange={handleInputChange('customerName')}
+                        required
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" placeholder="Your phone number" required/>
+                    <Input 
+                        id="phone" 
+                        placeholder="Your phone number" 
+                        value={formData.customerPhone || ''}
+                        onChange={handleInputChange('customerPhone')}
+                        required
+                    />
                 </div>
             </div>
             <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" placeholder="Street address, apartment, etc." required/>
+                <Label htmlFor="address">Address Line 1</Label>
+                <Input 
+                    id="address" 
+                    placeholder="Street address, apartment, etc." 
+                    value={formData.shippingAddressLine1}
+                    onChange={handleInputChange('shippingAddressLine1')}
+                    required
+                />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="address2">Address Line 2 (Optional)</Label>
+                <Input 
+                    id="address2" 
+                    placeholder="Apartment, suite, unit, building, floor, etc." 
+                    value={formData.shippingAddressLine2 || ''}
+                    onChange={handleInputChange('shippingAddressLine2')}
+                />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="city">City</Label>
-                    <Input id="city" placeholder="City" required/>
+                    <Input 
+                        id="city" 
+                        placeholder="City" 
+                        value={formData.shippingCity}
+                        onChange={handleInputChange('shippingCity')}
+                        required
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="state">State</Label>
-                    <Input id="state" placeholder="State" required/>
+                    <Input 
+                        id="state" 
+                        placeholder="State" 
+                        value={formData.shippingState}
+                        onChange={handleInputChange('shippingState')}
+                        required
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="pincode">Pincode</Label>
-                    <Input id="pincode" placeholder="Pincode" required/>
+                    <Input 
+                        id="pincode" 
+                        placeholder="Pincode" 
+                        value={formData.shippingPincode}
+                        onChange={handleInputChange('shippingPincode')}
+                        required
+                    />
                 </div>
             </div>
         </div>
@@ -69,16 +125,62 @@ function PaymentOptions({ selectedMethod, onMethodChange } : { selectedMethod: s
     );
 }
 
-export default function CheckoutPage() {
+function CheckoutForm() {
     const { cartItems, clearCart } = useCart();
+    const { user } = useAuthContext();
     const { toast } = useToast();
     const router = useRouter();
     const [paymentMethod, setPaymentMethod] = useState("razorpay");
     const [isLoading, setIsLoading] = useState(false);
+    const [formData, setFormData] = useState<CheckoutData>({
+        customerName: '',
+        customerPhone: '',
+        shippingAddressLine1: '',
+        shippingAddressLine2: '',
+        shippingCity: '',
+        shippingState: '',
+        shippingPincode: '',
+        paymentMethod: 'razorpay'
+    });
+
+    // Pre-fill form with user data when available
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                customerName: user.user_metadata?.name || user.email?.split('@')[0] || '',
+                customerPhone: user.user_metadata?.phone || ''
+            }));
+        }
+    }, [user]);
 
     const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const shipping = 150;
+    const shipping = 100;
     const total = subtotal + shipping;
+
+    // Validation function
+    const validateForm = (): boolean => {
+        const requiredFields = [
+            'customerName',
+            'customerPhone', 
+            'shippingAddressLine1',
+            'shippingCity',
+            'shippingState',
+            'shippingPincode'
+        ] as const;
+        
+        for (const field of requiredFields) {
+            if (!formData[field]?.trim()) {
+                toast({
+                    title: "Please fill all required fields",
+                    description: `${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} is required`,
+                    variant: "destructive"
+                });
+                return false;
+            }
+        }
+        return true;
+    };
 
     // This function loads the Razorpay script
     const loadScript = (src: string) => {
@@ -96,64 +198,117 @@ export default function CheckoutPage() {
     };
 
     const handlePlaceOrder = async () => {
+        if (!validateForm()) {
+            return;
+        }
+
         setIsLoading(true);
-        if (paymentMethod === 'cod') {
-            // Handle Cash on Delivery logic
-            toast({ title: "Order Placed!", description: "Your order has been successfully placed with Cash on Delivery." });
-            clearCart();
-            router.push('/my-account');
-            setIsLoading(false);
-            return;
-        }
-
-        // Handle Razorpay logic
-        const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
-        if (!res) {
-            toast({ title: "Error", description: "Razorpay SDK failed to load. Are you online?", variant: "destructive" });
-            setIsLoading(false);
-            return;
-        }
-
-        // YOU WILL NEED TO CREATE THIS SERVER ACTION
-        // This action will securely create an order on Razorpay's servers
-        // and return the order details.
         
-        // Mocking order creation for now
-        const orderAmount = total * 100; // Amount in paise
-        const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // YOUR RAZORPAY KEY ID
-            amount: orderAmount.toString(),
-            currency: "INR",
-            name: "Lade Studio",
-            description: "Artwork Purchase",
-            // order_id: from your server action,
-            handler: function (response: any) {
-                // On successful payment
-                toast({ title: "Payment Successful!", description: "Thank you for your order." });
-                console.log(response);
+        try {
+            // Update form data with selected payment method
+            const orderData = { ...formData, paymentMethod };
+            
+            if (paymentMethod === 'cod') {
+                // Handle Cash on Delivery - create order directly
+                // Convert cart items to the format expected by createOrder
+                const orderCartItems = cartItems.map(item => ({
+                    product: item,
+                    quantity: item.quantity
+                }));
+                
+                const { data: order, error } = await createOrder(
+                    orderData,
+                    orderCartItems,
+                    subtotal,
+                    shipping
+                );
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                toast({ 
+                    title: "Order Placed!", 
+                    description: `Your order #${order?.id?.slice(0, 8)} has been successfully placed with Cash on Delivery.` 
+                });
                 clearCart();
                 router.push('/my-account');
-            },
-            prefill: {
-                // You can prefill customer details here
-                name: "Your Customer",
-                email: "customer@example.com",
-                contact: "9999999999",
-            },
-            theme: {
-                color: "#A87C7C",
-            },
-        };
+                return;
+            }
 
-        const paymentObject = new (window as any).Razorpay(options);
-        paymentObject.open();
+            // Handle Razorpay logic
+            const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+            if (!res) {
+                throw new Error("Razorpay SDK failed to load. Are you online?");
+            }
 
-        paymentObject.on('payment.failed', function (response: any) {
-            toast({ title: "Payment Failed", description: "Please try again.", variant: "destructive" });
-            console.error(response.error);
-        });
-        
-        setIsLoading(false);
+            // Convert cart items to the format expected by createOrder
+            const orderCartItems = cartItems.map(item => ({
+                product: item,
+                quantity: item.quantity
+            }));
+            
+            // Create order first (for Razorpay integration)
+            const { data: pendingOrder, error: orderError } = await createOrder(
+                { ...orderData, paymentMethod: 'razorpay' },
+                orderCartItems,
+                subtotal,
+                shipping
+            );
+            
+            if (orderError || !pendingOrder) {
+                throw new Error(orderError?.message || 'Failed to create order');
+            }
+
+            const orderAmount = total * 100; // Amount in paise
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // YOUR RAZORPAY KEY ID
+                amount: orderAmount.toString(),
+                currency: "INR",
+                name: "Lade Studio",
+                description: "Artwork Purchase",
+                order_id: pendingOrder.id, // Use the created order ID
+                handler: function (response: any) {
+                    // On successful payment - you might want to verify payment on server
+                    toast({ 
+                        title: "Payment Successful!", 
+                        description: `Thank you for your order #${pendingOrder.id.slice(0, 8)}.` 
+                    });
+                    console.log(response);
+                    clearCart();
+                    router.push('/my-account');
+                },
+                prefill: {
+                    name: formData.customerName,
+                    email: "customer@example.com", // You might want to add email to form
+                    contact: formData.customerPhone,
+                },
+                theme: {
+                    color: "#A87C7C",
+                },
+            };
+
+            const paymentObject = new (window as any).Razorpay(options);
+            paymentObject.open();
+
+            paymentObject.on('payment.failed', function (response: any) {
+                toast({ 
+                    title: "Payment Failed", 
+                    description: "Please try again.", 
+                    variant: "destructive" 
+                });
+                console.error(response.error);
+            });
+            
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: (error as Error).message,
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
 
@@ -176,7 +331,7 @@ export default function CheckoutPage() {
                                 <CardTitle className="font-headline text-2xl">1. Shipping Address</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <AddressForm />
+                                <AddressForm formData={formData} setFormData={setFormData} />
                             </CardContent>
                         </Card>
                         <Card>
@@ -237,5 +392,16 @@ export default function CheckoutPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function CheckoutPage() {
+    return (
+        <ProtectedRoute 
+            title="Sign in to Complete Your Purchase"
+            description="Please sign in to proceed with checkout and place your order."
+        >
+            <CheckoutForm />
+        </ProtectedRoute>
     );
 }

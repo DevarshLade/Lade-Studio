@@ -4,9 +4,14 @@
 import { useState, useEffect } from "react";
 import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { products } from "@/lib/data";
+import { getProductBySlug } from "@/lib/api/products";
+import { addProductReview, canUserReviewProduct, getUserReviewsForProduct, getUserReviewCount } from "@/lib/api/reviews";
+import { useAuthContext } from "@/context/AuthContext";
+import { EditReviewDialog } from "@/components/review/EditReviewDialog";
+import { ImageUpload } from "@/components/review/ImageUpload";
+import type { Product, Review } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Heart, Minus, Plus, ShoppingCart, Star } from "lucide-react";
+import { Heart, Minus, Plus, ShoppingCart, Star, Loader2, AlertCircle } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/context/cart-context";
@@ -15,7 +20,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useWishlist } from "@/context/wishlist-context";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
+import Link from "next/link";
+import { Edit2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -55,23 +62,148 @@ function StarRating({ rating, onRatingChange, readOnly = false }: { rating: numb
   );
 }
 
-function ProductReviews() {
-  const params = useParams();
-  const product = products.find((p) => p.slug === params.slug);
+function ProductReviews({ product }: { product: Product }) {
   const { toast } = useToast();
+  const { isAuthenticated, user } = useAuthContext();
   const [newRating, setNewRating] = useState(0);
+  const [reviews, setReviews] = useState<Review[]>(product.reviews || []);
+  const [submitting, setSubmitting] = useState(false);
+  const [canReview, setCanReview] = useState(false);
+  const [reviewEligibilityReason, setReviewEligibilityReason] = useState<string>('');
+  const [checkingEligibility, setCheckingEligibility] = useState(true);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [reviewCount, setReviewCount] = useState({ count: 0, remaining: 10 });
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [currentEditReview, setCurrentEditReview] = useState<Review | null>(null);
+  const [reviewImages, setReviewImages] = useState<string[]>([]);
 
-  const averageRating = product?.reviews ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length : 0;
+  // Check if user can review this product and get their existing reviews
+  useEffect(() => {
+    async function checkReviewEligibility() {
+      if (!isAuthenticated) {
+        setCanReview(false);
+        setReviewEligibilityReason('Please sign in to write a review');
+        setCheckingEligibility(false);
+        return;
+      }
+
+      // Get user's existing reviews for this product
+      const { data: existingReviews } = await getUserReviewsForProduct(product.id);
+      
+      if (existingReviews && existingReviews.length > 0) {
+        // Convert to legacy format
+        const legacyReviews: Review[] = existingReviews.map(review => ({
+          id: review.id,
+          name: review.author_name,
+          rating: review.rating,
+          comment: review.comment || '',
+          date: new Date(review.created_at).toISOString().split('T')[0]
+        }));
+        setUserReviews(legacyReviews);
+      }
+
+      // Get review count and remaining
+      const { data: countData } = await getUserReviewCount(product.id);
+      if (countData) {
+        setReviewCount(countData);
+      }
+
+      // Check eligibility (now based on 10 review limit)
+      const { canReview: eligible, reason } = await canUserReviewProduct(product.id);
+      setCanReview(eligible);
+      setReviewEligibilityReason(reason || '');
+      setCheckingEligibility(false);
+    }
+
+    checkReviewEligibility();
+  }, [product.id, isAuthenticated]);
+
+  const averageRating = reviews.length > 0 ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length : 0;
+
+  // Check if a review belongs to the current user
+  const isUserReview = (review: Review) => {
+    if (!isAuthenticated || !user) return false;
+    const userName = user.user_metadata?.name || user.email?.split('@')[0];
+    const userEmail = user.email;
+    return review.name === userName || review.name === userEmail;
+  };
+
+  // Handle edit review
+  const handleEditReview = (review: Review) => {
+    setCurrentEditReview(review);
+    setEditDialogOpen(true);
+  };
+
+  // Handle review update from dialog
+  const handleReviewUpdated = (updatedReview: Review) => {
+    // Update the review in userReviews
+    setUserReviews(prev => prev.map(review => 
+      review.id === updatedReview.id ? updatedReview : review
+    ));
+    // Update the review in the main reviews list
+    setReviews(prev => prev.map(review => 
+      review.id === updatedReview.id ? updatedReview : review
+    ));
+    setCurrentEditReview(null);
+  };
   
-  const handleReviewSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleReviewSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // In a real app, you would submit this data to your backend
-    toast({
-      title: "Review Submitted!",
-      description: "Thank you for your feedback.",
-    });
-    (e.target as HTMLFormElement).reset();
-    setNewRating(0);
+    setSubmitting(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const authorName = formData.get('review-name') as string;
+    const comment = formData.get('review-comment') as string;
+    
+    if (newRating === 0) {
+      toast({
+        title: "Please select a rating",
+        description: "You must provide a rating from 1 to 5 stars.",
+        variant: "destructive"
+      });
+      setSubmitting(false);
+      return;
+    }
+    
+    const { data, error } = await addProductReview(product.id, authorName, newRating, comment, reviewImages);
+    
+    if (error) {
+      toast({
+        title: "Error submitting review",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Review Submitted!",
+        description: "Thank you for your feedback.",
+      });
+      
+      // Add the new review to the local state
+      const newReview: Review = {
+        id: data?.id || Math.random().toString(),
+        name: authorName,
+        rating: newRating,
+        comment,
+        date: new Date().toISOString().split('T')[0],
+        images: reviewImages
+      };
+      setReviews(prev => [newReview, ...prev]);
+      setUserReviews(prev => [newReview, ...prev]);
+      
+      // Update review count
+      setReviewCount(prev => ({
+        count: prev.count + 1,
+        remaining: prev.remaining - 1
+      }));
+      
+      // Reset form
+      (e.target as HTMLFormElement).reset();
+      setNewRating(0);
+      setReviewImages([]);
+    }
+    
+    setSubmitting(false);
   };
 
   if (!product) {
@@ -87,8 +219,8 @@ function ProductReviews() {
           <Card>
             <CardHeader>
               <CardTitle className="font-headline flex items-center gap-4">
-                <span>{product?.reviews?.length || 0} Reviews</span>
-                {product?.reviews && product.reviews.length > 0 && (
+                <span>{reviews.length || 0} Reviews</span>
+                {reviews.length > 0 && (
                   <div className="flex items-center gap-2">
                     <StarRating rating={averageRating} readOnly />
                     <span className="text-lg font-bold text-primary">{averageRating.toFixed(1)}</span>
@@ -97,17 +229,46 @@ function ProductReviews() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 max-h-96 overflow-y-auto">
-              {product?.reviews && product.reviews.length > 0 ? (
-                product.reviews.map(review => (
-                  <div key={review.id}>
-                    <div className="flex items-center justify-between mb-2">
+              {reviews.length > 0 ? (
+                reviews.map(review => (
+                  <div key={review.id} className="space-y-3">
+                    <div className="flex items-center justify-between">
                        <div className="flex items-center gap-2">
                         <p className="font-semibold">{review.name}</p>
                         <StarRating rating={review.rating} readOnly />
                        </div>
-                      <p className="text-sm text-muted-foreground">{review.date}</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-sm text-muted-foreground">{review.date}</p>
+                        {isUserReview(review) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditReview(review)}
+                            className="h-8 px-3"
+                          >
+                            <Edit2 className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                      </div>
                     </div>
                     <p className="text-muted-foreground">{review.comment}</p>
+                    {review.images && review.images.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
+                        {review.images.map((imageUrl, imageIndex) => (
+                          <div key={imageIndex} className="aspect-square bg-muted rounded-lg overflow-hidden">
+                            <Image
+                              src={imageUrl}
+                              alt={`Review image ${imageIndex + 1}`}
+                              width={150}
+                              height={150}
+                              className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() => window.open(imageUrl, '_blank')}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
@@ -123,25 +284,147 @@ function ProductReviews() {
               <CardTitle className="font-headline">Write a Review</CardTitle>
             </CardHeader>
             <CardContent>
-              <form className="space-y-4" onSubmit={handleReviewSubmit}>
-                <div className="space-y-2">
-                  <Label>Your Rating</Label>
-                  <StarRating rating={newRating} onRatingChange={setNewRating} />
+              {checkingEligibility ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  <span>Checking eligibility...</span>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="review-name">Your Name</Label>
-                  <Input id="review-name" placeholder="Your name" required/>
+              ) : userReviews.length >= 10 ? (
+                <div className="text-center py-8">
+                  <div className="bg-muted/50 p-6 rounded-lg">
+                    <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-lg font-medium mb-2">Review Limit Reached</p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      You have reached the maximum limit of 10 reviews for this product.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      You can edit your existing reviews below.
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="review-comment">Your Review</Label>
-                  <Textarea id="review-comment" placeholder="Share your thoughts about the product..." rows={4} required/>
+              ) : userReviews.length > 0 ? (
+                <div className="space-y-6">
+                  {/* Show user's existing reviews */}
+                  <div className="bg-muted/50 p-6 rounded-lg">
+                    <h3 className="text-lg font-medium mb-4">Your Reviews ({userReviews.length}/10)</h3>
+                    <div className="space-y-4">
+                      {userReviews.map((review) => (
+                        <div key={review.id} className="flex items-center justify-between bg-background p-4 rounded-lg">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <StarRating rating={review.rating} readOnly />
+                              <span className="text-sm text-muted-foreground">{review.date}</span>
+                            </div>
+                            <p className="text-sm">{review.comment}</p>
+                            {review.images && review.images.length > 0 && (
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                                {review.images.map((imageUrl, imageIndex) => (
+                                  <div key={imageIndex} className="aspect-square bg-muted rounded-md overflow-hidden">
+                                    <Image
+                                      src={imageUrl}
+                                      alt={`Review image ${imageIndex + 1}`}
+                                      width={100}
+                                      height={100}
+                                      className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                      onClick={() => window.open(imageUrl, '_blank')}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditReview(review)}
+                          >
+                            <Edit2 className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Add Another Review Form */}
+                  {canReview && (
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Add Another Review ({reviewCount.remaining} remaining)</h3>
+                      <form className="space-y-4" onSubmit={handleReviewSubmit}>
+                        <div className="space-y-2">
+                          <Label>Your Rating</Label>
+                          <StarRating rating={newRating} onRatingChange={setNewRating} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="review-name">Your Name</Label>
+                          <Input id="review-name" name="review-name" placeholder="Your name" required/>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="review-comment">Your Review</Label>
+                          <Textarea id="review-comment" name="review-comment" placeholder="Share your thoughts about the product..." rows={4} required/>
+                        </div>
+                        <ImageUpload
+                          onImagesChange={setReviewImages}
+                          maxImages={5}
+                          disabled={submitting}
+                        />
+                        <Button type="submit" className="w-full" disabled={submitting}>
+                          {submitting ? 'Submitting...' : 'Submit Review'}
+                        </Button>
+                      </form>
+                    </div>
+                  )}
                 </div>
-                <Button type="submit" className="w-full">Submit Review</Button>
-              </form>
+              ) : !canReview ? (
+                <div className="text-center py-8">
+                  <div className="bg-muted/50 p-6 rounded-lg">
+                    <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground font-medium mb-2">Unable to Write Review</p>
+                    <p className="text-sm text-muted-foreground">{reviewEligibilityReason}</p>
+                    {!isAuthenticated && (
+                      <Button asChild className="mt-4">
+                        <Link href="/auth">Sign In to Review</Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <form className="space-y-4" onSubmit={handleReviewSubmit}>
+                  <div className="space-y-2">
+                    <Label>Your Rating</Label>
+                    <StarRating rating={newRating} onRatingChange={setNewRating} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="review-name">Your Name</Label>
+                    <Input id="review-name" name="review-name" placeholder="Your name" required/>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="review-comment">Your Review</Label>
+                    <Textarea id="review-comment" name="review-comment" placeholder="Share your thoughts about the product..." rows={4} required/>
+                  </div>
+                  <ImageUpload
+                    onImagesChange={setReviewImages}
+                    maxImages={5}
+                    disabled={submitting}
+                  />
+                  <Button type="submit" className="w-full" disabled={submitting}>
+                    {submitting ? 'Submitting...' : 'Submit Review'}
+                  </Button>
+                </form>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+      
+      {/* Edit Review Dialog */}
+      {currentEditReview && (
+        <EditReviewDialog
+          isOpen={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          review={currentEditReview}
+          onUpdated={handleReviewUpdated}
+        />
+      )}
     </div>
   )
 }
@@ -149,24 +432,75 @@ function ProductReviews() {
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const product = products.find((p) => p.slug === params.slug);
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    async function fetchProduct() {
+      if (!params.slug || typeof params.slug !== 'string') {
+        setError('Invalid product slug');
+        setLoading(false);
+        return;
+      }
 
-  if (!product) {
+      const { data, error } = await getProductBySlug(params.slug);
+      
+      if (error) {
+        setError(error.message);
+      } else if (!data) {
+        setError('Product not found');
+      } else {
+        setProduct(data);
+      }
+      
+      setLoading(false);
+    }
+    
+    fetchProduct();
+  }, [params.slug]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid md:grid-cols-2 gap-12">
+          <div className="space-y-4">
+            <Skeleton className="aspect-square w-full rounded-lg" />
+            <div className="grid grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="aspect-square w-full rounded-md" />
+              ))}
+            </div>
+          </div>
+          <div className="space-y-6">
+            <Skeleton className="h-12 w-3/4" />
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-2/3" />
+            <div className="flex gap-4">
+              <Skeleton className="h-12 flex-1" />
+              <Skeleton className="h-12 flex-1" />
+              <Skeleton className="h-12 w-12" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
     notFound();
   }
-  
-  const isFavorite = isInWishlist(product.id);
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
@@ -179,10 +513,6 @@ export default function ProductDetailPage() {
   const handleBuyNow = () => {
     addToCart(product, quantity);
     router.push('/checkout');
-  };
-
-  const handleFavorite = () => {
-    toggleWishlist(product.id);
   };
 
   return (
@@ -242,9 +572,13 @@ export default function ProductDetailPage() {
               <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
             </Button>
             <Button size="lg" variant="secondary" className="flex-1" onClick={handleBuyNow}>Buy Now</Button>
-            <Button size="lg" variant="outline" className="px-4" onClick={handleFavorite}>
-              {isMounted && <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />}
-            </Button>
+            <WishlistButton 
+              productId={product.id}
+              productName={product.name}
+              size="lg"
+              variant="outline"
+              className="px-4"
+            />
           </div>
 
           <Accordion type="single" collapsible defaultValue="description" className="w-full">
@@ -267,7 +601,7 @@ export default function ProductDetailPage() {
       <Separator className="my-16" />
       
       {/* Ratings and Reviews Section */}
-      <ProductReviews />
+      <ProductReviews product={product} />
       
       {/* Similar Artwork Section */}
       <ArtworkSuggestions currentArtworkId={product.id} />
