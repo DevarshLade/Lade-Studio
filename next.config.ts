@@ -10,7 +10,8 @@ const nextConfig: NextConfig = {
   },
   // Performance optimizations
   experimental: {
-    optimizeCss: true,
+    // Temporarily disable optimizeCss due to critters issues
+    // optimizeCss: true,
     optimizePackageImports: [
       'lucide-react',
       '@radix-ui/react-dialog',
@@ -52,7 +53,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'hqoexhhcilzjilnagotx.supabase.co',
         port: '',
-        pathname: '/storage/v1/object/public/**',
+        pathname: '/**',
       },
       // Add crafttrip.in to allow external images
       {
