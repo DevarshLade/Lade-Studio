@@ -13,7 +13,21 @@ const url = supabaseUrl || 'https://placeholder.supabase.co'
 const anonKey = supabaseAnonKey || 'placeholder-key'
 
 // Client for browser/client-side operations
-export const supabase = createClient<Database>(url, anonKey)
+export const supabase = createClient<Database>(url, anonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'lade-studio-web'
+    }
+  },
+  db: {
+    schema: 'public'
+  }
+})
 
 // Server-side client with service role key (for admin operations)
 export const supabaseAdmin = createClient<Database>(
@@ -23,6 +37,14 @@ export const supabaseAdmin = createClient<Database>(
     auth: {
       autoRefreshToken: false,
       persistSession: false
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'lade-studio-admin'
+      }
+    },
+    db: {
+      schema: 'public'
     }
   }
 )

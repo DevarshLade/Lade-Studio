@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -12,6 +11,11 @@ import SearchDialog from "@/components/search-dialog";
 import { useAuthContext } from "@/context/AuthContext";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { useWishlist } from "@/context/wishlist-context";
+import { useCart } from "@/context/cart-context";
+import type { Product } from '@/types';
+
+type CartItem = Product & { quantity: number };
 
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2">
@@ -64,7 +68,12 @@ const NavLinks = ({ className }: { className?: string }) => (
 
 const HeaderActions = ({ className }: { className?: string }) => {
   const { isAuthenticated } = useAuthContext();
+  const { wishlistCount } = useWishlist();
+  const { cartItems } = useCart();
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Calculate cart item count
+  const cartCount = cartItems.reduce((total: number, item: CartItem) => total + item.quantity, 0);
 
   return (
     <>
@@ -82,15 +91,25 @@ const HeaderActions = ({ className }: { className?: string }) => {
             <span className="sr-only">Sign In</span>
           </Button>
         )}
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" asChild className="relative">
           <Link href="/wishlist">
             <Heart className="h-5 w-5" />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {wishlistCount}
+              </span>
+            )}
             <span className="sr-only">Wishlist</span>
           </Link>
         </Button>
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" asChild className="relative">
           <Link href="/cart">
             <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
             <span className="sr-only">Shopping Cart</span>
           </Link>
         </Button>
@@ -110,10 +129,11 @@ export default function Header() {
         <Logo />
         <NavLinks className="hidden md:flex items-center gap-2" />
         <div className="flex items-center">
-          <HeaderActions className="hidden md:flex items-center" />
+          {/* Show HeaderActions on both mobile and desktop */}
+          <HeaderActions className="flex items-center" />
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
+              <Button variant="ghost" size="icon" className="md:hidden ml-2">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle Menu</span>
               </Button>
@@ -138,7 +158,7 @@ export default function Header() {
                     </Button>
                 </nav>
                 <div className="mt-auto p-4 border-t">
-                    <HeaderActions className="flex items-center justify-around" />
+                    {/* Remove the duplicate HeaderActions from the sheet since we're showing them above */}
                 </div>
               </div>
             </SheetContent>

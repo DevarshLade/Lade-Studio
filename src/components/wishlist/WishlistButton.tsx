@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Heart } from 'lucide-react'
+import { useWishlist } from '@/context/wishlist-context'
 import { useAuthContext } from '@/context/AuthContext'
-import { toggleWishlistItem, isProductInWishlist } from '@/lib/api/wishlist'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
@@ -25,32 +25,16 @@ export function WishlistButton({
   className,
   showText = false
 }: WishlistButtonProps) {
-  const { isAuthenticated, user } = useAuthContext()
+  const { isAuthenticated } = useAuthContext()
+  const { isInWishlist, toggleWishlist, loading } = useWishlist()
   const { toast } = useToast()
-  const [isInWishlist, setIsInWishlist] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [checkingStatus, setCheckingStatus] = useState(true)
+  const [localIsInWishlist, setLocalIsInWishlist] = useState(false)
 
   // Check initial wishlist status
   useEffect(() => {
-    async function checkWishlistStatus() {
-      if (!isAuthenticated || !user) {
-        setCheckingStatus(false)
-        return
-      }
-
-      try {
-        const { isInWishlist: inWishlist } = await isProductInWishlist(productId)
-        setIsInWishlist(inWishlist)
-      } catch (error) {
-        console.error('Error checking wishlist status:', error)
-      } finally {
-        setCheckingStatus(false)
-      }
-    }
-
-    checkWishlistStatus()
-  }, [productId, isAuthenticated, user])
+    setLocalIsInWishlist(isInWishlist(productId))
+  }, [productId, isInWishlist])
 
   const handleToggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault() // Prevent navigation if button is inside a link
@@ -68,21 +52,9 @@ export function WishlistButton({
     setIsLoading(true)
 
     try {
-      const { isInWishlist: newWishlistStatus, error } = await toggleWishlistItem(productId)
-      
-      if (error) {
-        throw new Error(error.message)
-      }
-
-      setIsInWishlist(newWishlistStatus)
-      
-      toast({
-        title: newWishlistStatus ? "Added to Wishlist" : "Removed from Wishlist",
-        description: newWishlistStatus 
-          ? `${productName} has been added to your wishlist.`
-          : `${productName} has been removed from your wishlist.`,
-        variant: "default"
-      })
+      await toggleWishlist(productId, productName)
+      // Update local state after successful toggle
+      setLocalIsInWishlist(!localIsInWishlist)
     } catch (error) {
       toast({
         title: "Error",
@@ -106,19 +78,8 @@ export function WishlistButton({
     lg: 'h-6 w-6'
   }[size]
 
-  if (checkingStatus) {
-    return (
-      <Button
-        variant={variant}
-        size={showText ? undefined : 'icon'}
-        className={cn(showText ? '' : buttonSize, className)}
-        disabled
-      >
-        <Heart className={cn(iconSize, 'animate-pulse')} />
-        {showText && <span className="ml-2">Loading...</span>}
-      </Button>
-    )
-  }
+  // Show loading state if either the context is loading or the button is processing
+  const isProcessing = loading || isLoading
 
   return (
     <Button
@@ -126,21 +87,21 @@ export function WishlistButton({
       size={showText ? undefined : 'icon'}
       className={cn(showText ? '' : buttonSize, className)}
       onClick={handleToggleWishlist}
-      disabled={isLoading}
-      title={isInWishlist ? `Remove ${productName} from wishlist` : `Add ${productName} to wishlist`}
+      disabled={isProcessing}
+      title={localIsInWishlist ? `Remove ${productName} from wishlist` : `Add ${productName} to wishlist`}
     >
       <Heart 
         className={cn(
           iconSize,
-          isInWishlist ? 'fill-red-500 text-red-500' : 'text-muted-foreground',
-          isLoading && 'animate-pulse'
+          localIsInWishlist ? 'fill-red-500 text-red-500' : 'text-muted-foreground',
+          isProcessing && 'animate-pulse'
         )} 
       />
       {showText && (
         <span className="ml-2">
-          {isLoading 
+          {isProcessing 
             ? 'Updating...' 
-            : isInWishlist 
+            : localIsInWishlist 
               ? 'In Wishlist' 
               : 'Add to Wishlist'
           }

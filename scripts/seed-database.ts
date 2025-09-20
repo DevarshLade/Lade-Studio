@@ -7,6 +7,21 @@ import type { ProductInsert, ReviewInsert } from '@/types/database'
 config({ path: '.env.local' })
 
 /**
+ * Generate a URL-friendly slug from a product name
+ */
+function generateSlug(name: string): string {
+  // Handle edge cases where name might be undefined or null
+  if (!name || typeof name !== 'string') {
+    return 'unnamed-product';
+  }
+  
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
  * Seed the database with initial product data
  */
 export async function seedProducts() {
@@ -14,22 +29,31 @@ export async function seedProducts() {
     console.log('🌱 Starting to seed products...')
 
     // Convert static products to Supabase format
-    const productsToInsert: ProductInsert[] = staticProducts.map(product => ({
-      name: product.name,
-      slug: product.slug,
-      description: product.description,
-      specification: product.specification,
-      price: product.price,
-      original_price: product.originalPrice || null,
-      category: product.category as any,
-      size: product.size || null,
-      images: product.images,
-      is_featured: product.isFeatured || false,
-      ai_hint: product.aiHint
-    }))
+    const productsToInsert: ProductInsert[] = staticProducts.map(product => {
+      // Validate product name
+      if (!product.name || typeof product.name !== 'string') {
+        throw new Error('Product name is required and must be a string');
+      }
+      
+      return {
+        name: product.name,
+        slug: product.slug || generateSlug(product.name), // Generate slug if not provided
+        description: product.description,
+        specification: product.specification,
+        price: product.price,
+        original_price: product.originalPrice || null,
+        category: product.category as any,
+        size: product.size || null,
+        images: product.images,
+        is_featured: product.isFeatured || false,
+        ai_hint: product.aiHint,
+        delivery_charge: (product as any).delivery_charge || 50,
+        sold_out: (product as any).soldOut || false
+      };
+    })
 
     // Insert products
-    const { data: insertedProducts, error: productError } = await supabaseAdmin
+    const { data: insertedProducts, error: productError } = await (supabaseAdmin as any)
       .from('products')
       .insert(productsToInsert)
       .select()
@@ -61,7 +85,7 @@ export async function seedProducts() {
     }
 
     if (reviewsToInsert.length > 0) {
-      const { data: insertedReviews, error: reviewError } = await supabaseAdmin
+      const { data: insertedReviews, error: reviewError } = await (supabaseAdmin as any)
         .from('reviews')
         .insert(reviewsToInsert)
         .select()

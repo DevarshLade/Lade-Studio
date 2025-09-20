@@ -26,42 +26,99 @@ export type Product = {
   isFeatured?: boolean; // This maps to is_featured in Supabase
   aiHint: string; // This maps to ai_hint in Supabase
   delivery_charge: number; // This maps to delivery_charge in Supabase
+  soldOut?: boolean; // This maps to sold_out in Supabase
   reviews?: Review[];
+  discountPercentage?: number; // Added for displaying discount percentages
 };
 
 // Helper functions to convert between Supabase and legacy types
 export function supabaseProductToLegacy(product: SupabaseProduct, reviews?: SupabaseReview[]): Product {
+  // Handle case where product might be null or undefined
+  if (!product) {
+    return {
+      id: 'unknown-id',
+      name: 'Unnamed Product',
+      category: 'Painting',
+      price: 0,
+      slug: 'unnamed-product',
+      images: ['https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop&crop=center'],
+      description: 'No description available',
+      specification: 'No specifications available',
+      aiHint: '',
+      delivery_charge: 0, // Changed from 50 to 0 since column doesn't exist
+      soldOut: false
+    } as Product;
+  }
+
   // Ensure images array is never null/undefined and contains valid URLs
-  const safeImages = product.images && Array.isArray(product.images) && product.images.length > 0 
-    ? product.images.filter(img => img && typeof img === 'string' && img.trim() !== '')
-    : [];
+  let safeImages: string[] = [];
+  if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+    safeImages = product.images.filter(img => img && typeof img === 'string' && img.trim() !== '');
+  }
+  
+  // If no valid images, use placeholder
+  if (safeImages.length === 0) {
+    safeImages = ['https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop&crop=center'];
+  }
+
+  // Generate slug if missing or invalid
+  const productSlug = product.slug && product.slug.trim() !== '' 
+    ? product.slug 
+    : generateSlug(product.name || 'unnamed-product');
 
   return {
-    id: product.id,
-    name: product.name,
-    category: product.category as any,
-    price: product.price,
-    originalPrice: product.original_price || undefined,
-    slug: product.slug,
+    id: product.id || 'unknown-id',
+    name: product.name || 'Unnamed Product',
+    category: product.category as any || 'Painting',
+    price: typeof product.price === 'number' ? product.price : 0,
+    originalPrice: typeof product.original_price === 'number' ? product.original_price : undefined,
+    slug: productSlug,
     images: safeImages,
-    description: product.description || '',
-    specification: product.specification || '',
+    description: product.description || 'No description available',
+    specification: product.specification || 'No specifications available',
     size: product.size || undefined,
-    isFeatured: product.is_featured || false,
+    isFeatured: typeof product.is_featured === 'boolean' ? product.is_featured : false,
     aiHint: product.ai_hint || '',
-    delivery_charge: (product as any).delivery_charge ?? 50,
-    reviews: reviews?.map(supabaseReviewToLegacy)
+    delivery_charge: 0, // Always default to 0 since column doesn't exist
+    soldOut: typeof product.sold_out === 'boolean' ? product.sold_out : false,
+    reviews: reviews?.map(supabaseReviewToLegacy) || []
   }
 }
 
+/**
+ * Generate a URL-friendly slug from a product name
+ */
+function generateSlug(name: string): string {
+  // Handle edge cases where name might be undefined or null
+  if (!name || typeof name !== 'string') {
+    return 'unnamed-product';
+  }
+  
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export function supabaseReviewToLegacy(review: SupabaseReview): Review {
+  if (!review) {
+    return {
+      id: 'unknown-id',
+      name: 'Anonymous',
+      rating: 5,
+      comment: '',
+      date: new Date().toISOString().split('T')[0],
+      images: []
+    };
+  }
+  
   return {
     id: review.id,
-    name: review.author_name,
-    rating: review.rating,
+    name: review.author_name || 'Anonymous',
+    rating: typeof review.rating === 'number' ? review.rating : 5,
     comment: review.comment || '',
-    date: new Date(review.created_at).toISOString().split('T')[0],
-    images: review.image_urls || []
+    date: review.created_at ? new Date(review.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    images: Array.isArray(review.image_urls) ? review.image_urls : []
   }
 }
 
@@ -87,10 +144,7 @@ export type BlogPost = {
 };
 
 // Cart and Order types
-export type CartItem = {
-  product: Product;
-  quantity: number;
-};
+export type CartItem = Product & { quantity: number };
 
 export type CheckoutData = {
   customerName: string;

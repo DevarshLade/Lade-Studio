@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Feather, Twitter, Instagram, Facebook } from "lucide-react";
+import { Feather, Instagram, Facebook } from "lucide-react";
 
 const Logo = () => (
   <Link href="/" className="flex items-center gap-2 mb-4">
@@ -54,9 +54,12 @@ export default function Footer() {
               <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">Subscribe</Button>
             </form>
             <div className="flex gap-4 mt-6">
-              <Link href="#" aria-label="Instagram"><Instagram className="h-6 w-6 hover:text-primary transition-colors" /></Link>
-              <Link href="#" aria-label="Facebook"><Facebook className="h-6 w-6 hover:text-primary transition-colors" /></Link>
-              <Link href="#" aria-label="Twitter"><Twitter className="h-6 w-6 hover:text-primary transition-colors" /></Link>
+              <Link href="https://www.instagram.com/lade.artstudio?igsh=aWFyeWFrNGFpNGg0" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                <Instagram className="h-6 w-6 hover:text-primary transition-colors" />
+              </Link>
+              <Link href="https://www.facebook.com/share/1EoFAuqR7m/?mibextid=wwXIfr" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+                <Facebook className="h-6 w-6 hover:text-primary transition-colors" />
+              </Link>
             </div>
           </div>
         </div>

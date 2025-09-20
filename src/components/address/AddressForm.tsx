@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast'
 import { createUserAddress, updateUserAddress } from '@/lib/api/addresses'
 import type { UserAddress } from '@/types/database'
+import { Info } from 'lucide-react'
 
 interface AddressFormProps {
   address?: UserAddress
@@ -31,6 +32,7 @@ const INDIAN_STATES = [
 
 export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) {
   const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [formData, setFormData] = useState({
     label: address?.label || '',
     full_name: address?.full_name || '',
@@ -44,8 +46,70 @@ export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) 
     is_default: address?.is_default || false
   })
 
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    // Label validation
+    if (!formData.label.trim()) {
+      newErrors.label = 'Address label is required'
+    } else if (formData.label.trim().length < 2) {
+      newErrors.label = 'Address label must be at least 2 characters'
+    }
+
+    // Full name validation
+    if (!formData.full_name.trim()) {
+      newErrors.full_name = 'Full name is required'
+    } else if (formData.full_name.trim().length < 2) {
+      newErrors.full_name = 'Full name must be at least 2 characters'
+    }
+
+    // Phone validation (optional but if provided, must be valid)
+    if (formData.phone && !/^[0-9]{10}$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number must be 10 digits'
+    }
+
+    // Address line 1 validation
+    if (!formData.address_line1.trim()) {
+      newErrors.address_line1 = 'Address line 1 is required'
+    } else if (formData.address_line1.trim().length < 5) {
+      newErrors.address_line1 = 'Address line 1 must be at least 5 characters'
+    }
+
+    // City validation
+    if (!formData.city.trim()) {
+      newErrors.city = 'City is required'
+    } else if (formData.city.trim().length < 2) {
+      newErrors.city = 'City must be at least 2 characters'
+    }
+
+    // State validation
+    if (!formData.state) {
+      newErrors.state = 'State is required'
+    }
+
+    // Pincode validation
+    if (!formData.pincode.trim()) {
+      newErrors.pincode = 'Pincode is required'
+    } else if (!/^[1-9][0-9]{5}$/.test(formData.pincode)) {
+      newErrors.pincode = 'Please enter a valid 6-digit pincode'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in the form before saving.",
+        variant: "destructive"
+      })
+      return
+    }
+    
     setLoading(true)
 
     try {
@@ -83,6 +147,11 @@ export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) 
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }))
+    }
   }
 
   return (
@@ -94,7 +163,17 @@ export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) 
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Information Banner */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <div className="flex items-start">
+            <Info className="h-4 w-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+            <p className="text-xs text-blue-700">
+              All fields marked with * are required. Please ensure your address is accurate for delivery purposes.
+            </p>
+          </div>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Address Label */}
           <div className="space-y-2">
             <Label htmlFor="label">Address Label *</Label>
@@ -103,8 +182,11 @@ export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) 
               placeholder="e.g., Home, Work, Office"
               value={formData.label}
               onChange={(e) => handleInputChange('label', e.target.value)}
-              required
+              className={errors.label ? 'border-red-500' : ''}
             />
+            {errors.label && (
+              <p className="text-red-500 text-sm">{errors.label}</p>
+            )}
           </div>
 
           {/* Personal Information */}
@@ -116,18 +198,26 @@ export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) 
                 placeholder="Enter full name"
                 value={formData.full_name}
                 onChange={(e) => handleInputChange('full_name', e.target.value)}
-                required
+                className={errors.full_name ? 'border-red-500' : ''}
               />
+              {errors.full_name && (
+                <p className="text-red-500 text-sm">{errors.full_name}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
               <Input
                 id="phone"
                 type="tel"
-                placeholder="Enter phone number"
+                placeholder="10-digit mobile number"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
+                className={errors.phone ? 'border-red-500' : ''}
               />
+              {errors.phone && (
+                <p className="text-red-500 text-sm">{errors.phone}</p>
+              )}
+              <p className="text-xs text-gray-500">We'll use this for delivery updates</p>
             </div>
           </div>
 
@@ -140,8 +230,11 @@ export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) 
                 placeholder="House/Flat number, Building name, Street"
                 value={formData.address_line1}
                 onChange={(e) => handleInputChange('address_line1', e.target.value)}
-                required
+                className={errors.address_line1 ? 'border-red-500' : ''}
               />
+              {errors.address_line1 && (
+                <p className="text-red-500 text-sm">{errors.address_line1}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="address_line2">Address Line 2</Label>
@@ -151,6 +244,7 @@ export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) 
                 value={formData.address_line2}
                 onChange={(e) => handleInputChange('address_line2', e.target.value)}
               />
+              <p className="text-xs text-gray-500">Include nearby landmark for easier delivery</p>
             </div>
           </div>
 
@@ -163,13 +257,19 @@ export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) 
                 placeholder="Enter city"
                 value={formData.city}
                 onChange={(e) => handleInputChange('city', e.target.value)}
-                required
+                className={errors.city ? 'border-red-500' : ''}
               />
+              {errors.city && (
+                <p className="text-red-500 text-sm">{errors.city}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="state">State *</Label>
-              <Select value={formData.state} onValueChange={(value) => handleInputChange('state', value)}>
-                <SelectTrigger>
+              <Select 
+                value={formData.state} 
+                onValueChange={(value) => handleInputChange('state', value)}
+              >
+                <SelectTrigger className={errors.state ? 'border-red-500' : ''}>
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
                 <SelectContent>
@@ -180,16 +280,22 @@ export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) 
                   ))}
                 </SelectContent>
               </Select>
+              {errors.state && (
+                <p className="text-red-500 text-sm">{errors.state}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="pincode">Pincode *</Label>
               <Input
                 id="pincode"
-                placeholder="Enter pincode"
+                placeholder="6-digit pincode"
                 value={formData.pincode}
                 onChange={(e) => handleInputChange('pincode', e.target.value)}
-                required
+                className={errors.pincode ? 'border-red-500' : ''}
               />
+              {errors.pincode && (
+                <p className="text-red-500 text-sm">{errors.pincode}</p>
+              )}
             </div>
           </div>
 
@@ -205,7 +311,7 @@ export function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) 
           </div>
 
           {/* Default Address Checkbox */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 pt-2">
             <Checkbox
               id="is_default"
               checked={formData.is_default}

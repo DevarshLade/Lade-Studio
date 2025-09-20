@@ -8,13 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart } = useCart();
+  const router = useRouter();
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shipping = 150;
+  const shipping = 0; // Remove default shipping charge
   const total = subtotal + shipping;
+
+  const handleProceedToCheckout = () => {
+    if (cartItems.length > 0) {
+      router.push('/checkout');
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -80,8 +88,13 @@ export default function CartPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button asChild size="lg" className="w-full" disabled={cartItems.length === 0}>
-                <Link href="/checkout">Proceed to Checkout</Link>
+              <Button 
+                size="lg" 
+                className="w-full" 
+                disabled={cartItems.length === 0}
+                onClick={handleProceedToCheckout}
+              >
+                Proceed to Checkout
               </Button>
             </CardFooter>
           </Card>

@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { toast } from '@/hooks/use-toast'
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react'
 
 interface AuthModalProps {
@@ -103,6 +104,12 @@ export function AuthModal({
     if (!error) {
       onClose()
       setSignUpForm({ name: '', email: '', password: '', confirmPassword: '' })
+      
+      // Show success message
+      toast({
+        title: "Account Created",
+        description: "Your account has been created successfully. Please check your email for confirmation.",
+      })
     }
   }
 

@@ -44,7 +44,7 @@ function StarRating({ rating, onRatingChange }: { rating: number, onRatingChange
 export function EditReviewDialog({ isOpen, onClose, review, onUpdated }: EditReviewDialogProps) {
   const [rating, setRating] = useState(review.rating)
   const [comment, setComment] = useState(review.comment || '')
-  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [imageUrls, setImageUrls] = useState<string[]>(review.images || [])
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
@@ -55,6 +55,16 @@ export function EditReviewDialog({ isOpen, onClose, review, onUpdated }: EditRev
       toast({
         title: "Rating Required",
         description: "Please select a rating from 1 to 5 stars.",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    // Validate comment length
+    if (comment && comment.length > 1000) {
+      toast({
+        title: "Comment too long",
+        description: "Please keep your comment under 1000 characters.",
         variant: "destructive"
       })
       return
@@ -85,9 +95,10 @@ export function EditReviewDialog({ isOpen, onClose, review, onUpdated }: EditRev
       onUpdated(updatedReview)
       onClose()
     } catch (error) {
+      console.error("Review update error:", error)
       toast({
         title: "Update Failed",
-        description: (error as Error).message,
+        description: (error as Error).message || "Failed to update review. Please try again.",
         variant: "destructive"
       })
     } finally {
@@ -100,7 +111,7 @@ export function EditReviewDialog({ isOpen, onClose, review, onUpdated }: EditRev
       // Reset form to original values when closing
       setRating(review.rating)
       setComment(review.comment || '')
-      setImageUrls([])
+      setImageUrls(review.images || [])
       onClose()
     }
   }
@@ -117,7 +128,7 @@ export function EditReviewDialog({ isOpen, onClose, review, onUpdated }: EditRev
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
-            <Label className="text-base font-medium">Your Rating</Label>
+            <Label className="text-base font-medium">Your Rating *</Label>
             <StarRating rating={rating} onRatingChange={setRating} />
             <p className="text-sm text-muted-foreground">
               {rating === 0 && "Select a rating"}
@@ -140,7 +151,12 @@ export function EditReviewDialog({ isOpen, onClose, review, onUpdated }: EditRev
               placeholder="Share your updated thoughts about this product..."
               rows={4}
               className="resize-none"
+              maxLength={1000}
             />
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>Optional</span>
+              <span>{comment.length}/1000 characters</span>
+            </div>
           </div>
 
           <ImageUpload

@@ -10,19 +10,51 @@ export async function getUserWishlist(): Promise<{
   error: Error | null 
 }> {
   try {
-    const { data: wishlistItems, error } = await supabase
-      .from('wishlist')
-      .select(`
-        *,
-        products (*)
-      `)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      throw new Error(error.message)
+    const { data: user } = await supabase.auth.getUser()
+    
+    if (!user.user) {
+      throw new Error('User must be authenticated to fetch wishlist')
     }
 
-    return { data: wishlistItems as any, error: null }
+    // First get the wishlist items for the user
+    const { data: wishlistItems, error: wishlistError } = await supabase
+      .from('wishlist')
+      .select('*')
+      .eq('user_id', user.user.id)
+      .order('created_at', { ascending: false })
+
+    if (wishlistError) {
+      throw new Error(wishlistError.message)
+    }
+
+    // If no wishlist items, return empty array
+    if (!wishlistItems || wishlistItems.length === 0) {
+      return { data: [], error: null }
+    }
+
+    // Get product IDs from wishlist items
+    const productIds = wishlistItems.map(item => item.product_id)
+
+    // Fetch products separately
+    const { data: products, error: productsError } = await supabase
+      .from('products')
+      .select('*')
+      .in('id', productIds)
+
+    if (productsError) {
+      throw new Error(productsError.message)
+    }
+
+    // Combine wishlist items with product data
+    const wishlistWithProducts = wishlistItems.map(wishlistItem => {
+      const product = products.find(p => p.id === wishlistItem.product_id)
+      return {
+        ...wishlistItem,
+        products: product || ({} as Product)
+      }
+    })
+
+    return { data: wishlistWithProducts as any, error: null }
   } catch (error) {
     return { data: null, error: error as Error }
   }
@@ -47,7 +79,7 @@ export async function addToWishlist(productId: string): Promise<{
       product_id: productId
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('wishlist')
       .insert(wishlistItem)
       .select()
@@ -111,7 +143,7 @@ export async function toggleWishlistItem(productId: string): Promise<{
     }
 
     // Use the database function for atomic toggle operation
-    const { data, error } = await supabase.rpc('toggle_wishlist_item', {
+    const { data, error } = await (supabase as any).rpc('toggle_wishlist_item', {
       product_uuid: productId
     })
 

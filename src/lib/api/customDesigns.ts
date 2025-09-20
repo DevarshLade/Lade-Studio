@@ -84,21 +84,48 @@ export async function getCategories(): Promise<{ data: Category[] | null; error:
 // Get products by category
 export async function getProductsByCategory(categoryId: string): Promise<{ data: Product[] | null; error: Error | null }> {
   try {
-    const { data, error } = await supabase
+    // First, let's verify the category exists
+    const { data: categoryData, error: categoryError } = await supabase
+      .from('categories')
+      .select('id, name')
+      .eq('id', categoryId)
+      .single();
+
+    if (categoryError) {
+      console.error('Error verifying category:', categoryError);
+      return { data: null, error: new Error(`Category not found: ${categoryId}`) };
+    }
+
+    // Try to fetch products by category_id first (foreign key approach)
+    const { data: productsData1, error: error1 } = await supabase
       .from('products')
       .select('*')
       .eq('category_id', categoryId)
-      .order('name')
+      .order('name');
 
-    if (error) {
-      console.error('Error fetching products by category:', error)
-      return { data: null, error: new Error(error.message) }
+    if (!error1) {
+      return { data: productsData1, error: null };
     }
 
-    return { data, error: null }
+    // If that fails, try to fetch products by category enum value
+    console.warn('Failed to fetch products by category_id, trying category enum:', error1);
+    
+    const { data: productsData2, error: error2 } = await supabase
+      .from('products')
+      .select('*')
+      .eq('category', (categoryData as any).name)
+      .order('name');
+      
+    if (!error2) {
+      return { data: productsData2, error: null };
+    }
+
+    // If both approaches fail, return an empty array (no products for this category)
+    console.warn('Failed to fetch products by both category_id and category enum:', error2);
+    return { data: [], error: null };
   } catch (error) {
-    console.error('Unexpected error fetching products by category:', error)
-    return { data: null, error: error as Error }
+    console.error('Unexpected error fetching products by category:', error);
+    return { data: null, error: error as Error };
   }
 }
 

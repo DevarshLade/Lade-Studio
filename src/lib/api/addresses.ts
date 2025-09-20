@@ -71,7 +71,7 @@ export async function createUserAddress(
       user_id: user.id
     }
 
-    const { data: address, error } = await supabase
+    const { data: address, error } = await (supabase as any)
       .from('user_addresses')
       .insert(newAddress)
       .select()
@@ -95,7 +95,7 @@ export async function updateUserAddress(
   updates: Omit<UserAddressUpdate, 'user_id' | 'id'>
 ): Promise<{ data: UserAddress | null; error: Error | null }> {
   try {
-    const { data: address, error } = await supabase
+    const { data: address, error } = await (supabase as any)
       .from('user_addresses')
       .update(updates)
       .eq('id', addressId)
@@ -140,7 +140,7 @@ export async function setDefaultAddress(addressId: string): Promise<{
   error: Error | null 
 }> {
   try {
-    const { data: address, error } = await supabase
+    const { data: address, error } = await (supabase as any)
       .from('user_addresses')
       .update({ is_default: true })
       .eq('id', addressId)

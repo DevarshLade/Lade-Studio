@@ -26,6 +26,8 @@ export interface Database {
           images: string[] | null
           is_featured: boolean | null
           ai_hint: string | null
+          delivery_charge: number
+          sold_out: boolean | null
         }
         Insert: {
           id?: string
@@ -43,6 +45,8 @@ export interface Database {
           images?: string[] | null
           is_featured?: boolean | null
           ai_hint?: string | null
+          delivery_charge?: number
+          sold_out?: boolean | null
         }
         Update: {
           id?: string
@@ -60,6 +64,8 @@ export interface Database {
           images?: string[] | null
           is_featured?: boolean | null
           ai_hint?: string | null
+          delivery_charge?: number
+          sold_out?: boolean | null
         }
       }
       reviews: {
@@ -328,6 +334,36 @@ export interface Database {
           is_active?: boolean
         }
       }
+      // Add the product_notify_requests table definition
+      product_notify_requests: {
+        Row: {
+          id: string
+          created_at: string
+          product_id: string
+          user_email: string
+          user_name: string | null
+          notified: boolean
+          notified_at: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          product_id: string
+          user_email: string
+          user_name?: string | null
+          notified?: boolean
+          notified_at?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          product_id?: string
+          user_email?: string
+          user_name?: string | null
+          notified?: boolean
+          notified_at?: string | null
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -372,3 +408,8 @@ export type CustomDesignUpdate = Database['public']['Tables']['custom_designs'][
 export type Category = Database['public']['Tables']['categories']['Row']
 export type CategoryInsert = Database['public']['Tables']['categories']['Insert']
 export type CategoryUpdate = Database['public']['Tables']['categories']['Update']
+
+// Add convenience types for product_notify_requests
+export type ProductNotifyRequest = Database['public']['Tables']['product_notify_requests']['Row']
+export type ProductNotifyRequestInsert = Database['public']['Tables']['product_notify_requests']['Insert']
+export type ProductNotifyRequestUpdate = Database['public']['Tables']['product_notify_requests']['Update']

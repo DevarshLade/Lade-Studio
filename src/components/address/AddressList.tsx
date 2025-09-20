@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { toast } from '@/hooks/use-toast'
-import { Plus, MapPin, Phone, Edit, Trash2, MoreVertical, Star } from 'lucide-react'
+import { Plus, MapPin, Phone, Edit, Trash2, MoreVertical, Star, AlertCircle } from 'lucide-react'
 import { AddressForm } from './AddressForm'
 import { getUserAddresses, deleteUserAddress, setDefaultAddress } from '@/lib/api/addresses'
 import type { UserAddress } from '@/types/database'
@@ -38,7 +38,7 @@ export function AddressList({ onSelectAddress, selectionMode = false, selectedAd
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to load addresses",
+        description: "Failed to load addresses. Please try again.",
         variant: "destructive"
       })
     } finally {
@@ -47,6 +47,11 @@ export function AddressList({ onSelectAddress, selectionMode = false, selectedAd
   }
 
   const handleDelete = async (addressId: string) => {
+    // Show confirmation before deleting
+    if (!window.confirm("Are you sure you want to delete this address?")) {
+      return
+    }
+    
     setDeletingId(addressId)
     try {
       const { error } = await deleteUserAddress(addressId)
@@ -60,7 +65,7 @@ export function AddressList({ onSelectAddress, selectionMode = false, selectedAd
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete address",
+        description: "Failed to delete address. Please try again.",
         variant: "destructive"
       })
     } finally {
@@ -86,7 +91,7 @@ export function AddressList({ onSelectAddress, selectionMode = false, selectedAd
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to set default address",
+        description: "Failed to set default address. Please try again.",
         variant: "destructive"
       })
     }
@@ -132,18 +137,24 @@ export function AddressList({ onSelectAddress, selectionMode = false, selectedAd
         </div>
         <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
           <DialogTrigger asChild>
-            <Button>
+            <Button variant="outline">
               <Plus className="h-4 w-4 mr-2" />
               Add Address
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Address</DialogTitle>
+              <DialogDescription>
+                Add a new delivery address to your account.
+              </DialogDescription>
+            </DialogHeader>
             <AddressForm onSuccess={handleFormSuccess} onCancel={() => setShowAddForm(false)} />
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Addresses List */}
+      {/* Empty State */}
       {addresses.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
@@ -159,16 +170,15 @@ export function AddressList({ onSelectAddress, selectionMode = false, selectedAd
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="space-y-4">
           {addresses.map((address) => (
             <Card 
               key={address.id} 
-              className={`cursor-pointer transition-all hover:shadow-md ${
+              className={`transition-all hover:shadow-md ${
                 selectionMode && selectedAddressId === address.id 
                   ? 'ring-2 ring-primary border-primary' 
                   : ''
               }`}
-              onClick={() => handleAddressSelect(address)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
@@ -228,15 +238,44 @@ export function AddressList({ onSelectAddress, selectionMode = false, selectedAd
                     <p>{address.country}</p>
                   </div>
                 </div>
+                
+                {/* Clickable overlay for selection mode */}
+                {selectionMode && (
+                  <div 
+                    className="absolute inset-0 cursor-pointer"
+                    onClick={() => handleAddressSelect(address)}
+                  />
+                )}
               </CardContent>
             </Card>
           ))}
+          
+          {/* Address Management Tips */}
+          <Card className="bg-blue-50 border-blue-200">
+            <CardContent className="p-4">
+              <div className="flex items-start">
+                <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <h4 className="text-sm font-medium text-blue-800">Address Management Tips</h4>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Keep your addresses up to date for smooth deliveries. Set a default address for faster checkout.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Edit Address Dialog */}
       <Dialog open={!!editingAddress} onOpenChange={(open) => !open && setEditingAddress(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Address</DialogTitle>
+            <DialogDescription>
+              Update your address information.
+            </DialogDescription>
+          </DialogHeader>
           {editingAddress && (
             <AddressForm 
               address={editingAddress} 

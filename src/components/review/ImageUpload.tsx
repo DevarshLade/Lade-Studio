@@ -45,8 +45,41 @@ export function ImageUpload({
       return
     }
 
+    // Validate file types and sizes
+    const validFiles: File[] = []
+    const invalidFiles: string[] = []
+    
+    for (const file of files) {
+      // Check file type
+      if (!file.type.match('image.*')) {
+        invalidFiles.push(`${file.name} (invalid file type)`)
+        continue
+      }
+      
+      // Check file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        invalidFiles.push(`${file.name} (file too large - max 5MB)`)
+        continue
+      }
+      
+      validFiles.push(file)
+    }
+    
+    if (invalidFiles.length > 0) {
+      toast({
+        title: "Invalid files detected",
+        description: `The following files were rejected: ${invalidFiles.join(', ')}`,
+        variant: "destructive"
+      })
+      
+      // If no valid files, return early
+      if (validFiles.length === 0) {
+        return
+      }
+    }
+
     // Create preview URLs
-    const newPreviews = files.map(file => ({
+    const newPreviews = validFiles.map(file => ({
       file,
       preview: URL.createObjectURL(file)
     }))
@@ -68,7 +101,7 @@ export function ImageUpload({
     try {
       // Compress images before upload
       const compressedFiles = await Promise.all(
-        files.map(file => compressImage(file, 1200, 0.8))
+        validFiles.map(file => compressImage(file, 1200, 0.8))
       )
 
       // Upload to Supabase

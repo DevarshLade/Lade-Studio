@@ -1,41 +1,169 @@
-
-
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { getFeaturedProducts, getProducts } from "@/lib/api/products";
-import { testimonials, blogPosts, categories } from "@/lib/data";
 import { ArrowRight, ShoppingCart } from "lucide-react";
+import { getFeaturedProducts, getLatestProducts, getHighDiscountProducts } from "@/lib/api/products";
+import { testimonials, blogPosts, categories } from "@/lib/data";
 import ProductCard from "@/components/product-card";
+import { Suspense } from "react";
+
+// Loading skeletons for better UX
+function CategorySkeleton() {
+  return (
+    <Card className="overflow-hidden border-2 border-transparent">
+      <CardContent className="p-0">
+        <div className="w-full h-64 bg-gray-200 animate-pulse" />
+      </CardContent>
+      <CardFooter className="p-6 bg-background">
+        <div className="h-6 w-3/4 bg-gray-200 animate-pulse rounded" />
+      </CardFooter>
+    </Card>
+  );
+}
+
+function ProductSkeleton() {
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="p-0">
+        <div className="w-full h-64 bg-gray-200 animate-pulse" />
+      </CardContent>
+      <CardFooter className="p-4">
+        <div className="space-y-2 w-full">
+          <div className="h-4 w-1/2 bg-gray-200 animate-pulse rounded" />
+          <div className="h-6 w-3/4 bg-gray-200 animate-pulse rounded" />
+          <div className="h-6 w-1/3 bg-gray-200 animate-pulse rounded" />
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
+
+function BlogSkeleton() {
+  return (
+    <Card className="flex flex-col overflow-hidden">
+      <div className="w-full h-48 bg-gray-200 animate-pulse" />
+      <CardContent className="flex-grow p-4 space-y-2">
+        <div className="h-6 w-3/4 bg-gray-200 animate-pulse rounded" />
+        <div className="h-4 w-full bg-gray-200 animate-pulse rounded" />
+        <div className="h-4 w-2/3 bg-gray-200 animate-pulse rounded" />
+      </CardContent>
+      <CardFooter className="p-4">
+        <div className="h-10 w-24 bg-gray-200 animate-pulse rounded" />
+      </CardFooter>
+    </Card>
+  );
+}
+
+// Async components for better streaming
+async function FeaturedCollections() {
+  const { data: latestProducts } = await getLatestProducts(8);
+  
+  return (
+    <section className="py-16 md:py-24 bg-accent/50">
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">Latest Releases</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {latestProducts?.slice(0, 8).map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+async function DiscountProducts() {
+  const { data: highDiscountProducts } = await getHighDiscountProducts(8);
+  
+  return (
+    <section className="py-16 md:py-24 bg-background">
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">Biggest Discounts</h2>
+        <Carousel opts={{ loop: true, align: "start" }} className="w-full">
+          <CarouselContent className="-ml-4">
+            {highDiscountProducts?.slice(0, 8).map((product) => (
+              <CarouselItem key={product.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                <div className="p-1">
+                  <ProductCard product={product} />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="hidden sm:flex" />
+          <CarouselNext className="hidden sm:flex" />
+        </Carousel>
+      </div>
+    </section>
+  );
+}
 
 export default async function Home() {
-  // Fetch featured products from Supabase
-  const { data: featuredProducts } = await getFeaturedProducts(8);
+  // Fetch latest released products for Featured Collections
+  const { data: latestProducts } = await getLatestProducts(8);
   
-  // Fetch products with original prices (discounted items)
-  const { data: allProducts } = await getProducts({ limit: 20 });
-  const discountedProducts = allProducts?.filter(p => p.originalPrice) || [];
+  // Fetch high discounted products for Discount section
+  const { data: highDiscountProducts } = await getHighDiscountProducts(8);
   
   const homeCategories = categories.slice(0, 3);
+  
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white">
-        <Image
-          src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgGVgAMpigIHSkXgx34IditgJ5aqG7aV5hxnpyzQzAsMPf_LVqPSNxsDbxiYblxab2szl-a5lzKkkDrwHTs0KerABmiQXJUBVPAiis8NKGT7WJV-1jSUNj7Z4Or8EhDj3FWCeFxDUHowLrsd1kyIdAx9Ci1gpNiM6MXalrDeY5VgvpS7itkBesuhxrcqoEf/s4008/654fe177-8f99-444a-9cf3-0abf779567d9%20(1).png"
-          alt="Artist at work"
-          fill
-          style={{objectFit: 'cover'}}
-          className="z-0"
-          data-ai-hint="artist workspace"
-          priority
-        />
-        <div className="z-10 p-4 max-w-3xl">
-          
+      {/* Hero Section - Replaced image banner with responsive hero */}
+      <section className="relative w-full bg-gradient-to-r from-primary/10 to-secondary/10 py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center">
+            {/* Text Content */}
+            <div className="md:w-1/2 mb-12 md:mb-0 md:pr-12">
+              <h1 className="text-4xl md:text-6xl font-headline font-bold mb-6 text-foreground">
+                Handcrafted Artistry for Your Home
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-lg">
+                Discover unique handmade paintings, hand-painted pots, and terracotta jewelry created with passion and attention to detail.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button asChild size="lg" className="text-lg px-8 py-6">
+                  <Link href="/products">
+                    Shop Now
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="text-lg px-8 py-6">
+                  <Link href="/custom-design">
+                    Custom Design
+                  </Link>
+                </Button>
+              </div>
+            </div>
+            
+            {/* Visual Element */}
+            <div className="md:w-1/2 flex justify-center">
+              <div className="relative w-full max-w-lg">
+                <div className="absolute -top-6 -left-6 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-6 -right-6 w-64 h-64 bg-secondary/20 rounded-full blur-3xl"></div>
+                <div className="relative bg-white rounded-2xl shadow-xl p-6 border">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-muted rounded-lg h-32 flex items-center justify-center">
+                      <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
+                    </div>
+                    <div className="bg-muted rounded-lg h-32 flex items-center justify-center">
+                      <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
+                    </div>
+                    <div className="bg-muted rounded-lg h-32 flex items-center justify-center">
+                      <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
+                    </div>
+                    <div className="bg-muted rounded-lg h-32 flex items-center justify-center">
+                      <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
+                    </div>
+                  </div>
+                  <div className="mt-4 text-center">
+                    <p className="font-headline font-bold text-lg">Unique Handcrafted Pieces</p>
+                    <p className="text-sm text-muted-foreground">Each item tells its own story</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -55,6 +183,8 @@ export default async function Home() {
                       height={500}
                       className="w-full h-auto object-cover aspect-[4/5] group-hover:scale-105 transition-transform duration-300"
                       data-ai-hint={category.hint}
+                      loading="lazy"
+                      quality={80}
                     />
                   </CardContent>
                   <CardFooter className="p-6 bg-background">
@@ -67,37 +197,49 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Featured Collections */}
-      <section className="py-16 md:py-24 bg-accent/50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">Featured Collections</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredProducts?.slice(0, 8).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Latest Releases - Featured Collections */}
+      <Suspense 
+        fallback={
+          <section className="py-16 md:py-24 bg-accent/50">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">Latest Releases</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <ProductSkeleton key={i} />
+                ))}
+              </div>
+            </div>
+          </section>
+        }
+      >
+        <FeaturedCollections />
+      </Suspense>
 
-      {/* Discount on Original Artworks */}
-      <section className="py-16 md:py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">Discount on Original Artworks</h2>
-          <Carousel opts={{ loop: true, align: "start" }} className="w-full">
-            <CarouselContent className="-ml-4">
-              {discountedProducts.map((product) => (
-                <CarouselItem key={product.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                  <div className="p-1">
-                    <ProductCard product={product} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
-          </Carousel>
-        </div>
-      </section>
+      {/* High Discount Products - Discount on Original Artworks */}
+      <Suspense 
+        fallback={
+          <section className="py-16 md:py-24 bg-background">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">Biggest Discounts</h2>
+              <Carousel opts={{ loop: true, align: "start" }} className="w-full">
+                <CarouselContent className="-ml-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <CarouselItem key={i} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                      <div className="p-1">
+                        <ProductSkeleton />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="hidden sm:flex" />
+                <CarouselNext className="hidden sm:flex" />
+              </Carousel>
+            </div>
+          </section>
+        }
+      >
+        <DiscountProducts />
+      </Suspense>
 
       {/* Blog & Videos */}
       <section className="py-16 md:py-24 bg-accent/50">
@@ -113,14 +255,14 @@ export default async function Home() {
                   height={250}
                   className="w-full h-auto object-cover"
                   data-ai-hint={post.hint}
+                  loading="lazy"
+                  quality={80}
                 />
-                <CardHeader>
-                  <CardTitle className="font-headline text-xl">{post.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
+                <CardContent className="flex-grow p-4">
+                  <h3 className="font-headline text-xl mb-2">{post.title}</h3>
                   <p className="text-muted-foreground">{post.excerpt}</p>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="p-4">
                   <Button asChild variant="link" className="p-0 h-auto">
                     <Link href="/blog">Read More <ArrowRight className="ml-2 h-4 w-4" /></Link>
                   </Button>
@@ -131,34 +273,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-16 md:py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-headline text-center mb-12">What Our Customers Say</h2>
-          <Carousel opts={{ loop: true }} className="w-full max-w-3xl mx-auto">
-            <CarouselContent>
-              {testimonials.map((testimonial) => (
-                <CarouselItem key={testimonial.id}>
-                  <div className="p-4">
-                    <Card className="bg-accent/50 border-0">
-                      <CardContent className="pt-6 flex flex-col items-center text-center">
-                        <Avatar className="w-16 h-16 mb-4">
-                          <AvatarImage src={testimonial.image} alt={testimonial.name} data-ai-hint="portrait person" />
-                          <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <p className="text-lg italic mb-4">"{testimonial.quote}"</p>
-                        <p className="font-bold font-headline text-foreground">{testimonial.name}</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
-          </Carousel>
-        </div>
-      </section>
+      {/* Testimonials section removed as requested */}
     </div>
   );
 }

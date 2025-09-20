@@ -17,7 +17,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AddressList } from "@/components/address/AddressList";
 import { CancelOrderDialog } from "@/components/order/CancelOrderDialog";
 
-type OrderWithItems = Order & { order_items: (OrderItem & { products: any })[] };
+type OrderWithItems = Order & { order_items: OrderItem[] };
 
 function EmptyState({ icon: Icon, title, description, buttonText, buttonLink }: { icon: React.ElementType, title: string, description: string, buttonText: string, buttonLink: string }) {
     return (

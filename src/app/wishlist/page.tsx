@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, ShoppingCart, Trash2, Loader2 } from "lucide-react";
+import { Heart, ShoppingCart, Trash2, Loader2, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthContext } from "@/context/AuthContext";
@@ -35,7 +35,7 @@ function EmptyWishlist() {
 
 function WishlistItem({ item, onRemove, onAddToCart }: {
     item: WishlistWithProduct;
-    onRemove: (productId: string) => void;
+    onRemove: (productId: string) => Promise<void>;
     onAddToCart: (product: Product) => void;
 }) {
     const [isRemoving, setIsRemoving] = useState(false);
@@ -51,16 +51,22 @@ function WishlistItem({ item, onRemove, onAddToCart }: {
         onAddToCart(product);
     };
 
+    // Handle image loading errors
+    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        e.currentTarget.src = 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop&crop=center';
+    };
+
     return (
-        <Card className="overflow-hidden">
-            <div className="flex">
-                <div className="relative w-32 h-32 flex-shrink-0">
+        <Card className="overflow-hidden hover:shadow-md transition-shadow">
+            <div className="flex flex-col sm:flex-row">
+                <div className="relative w-full sm:w-32 h-48 sm:h-32 flex-shrink-0">
                     <Image
-                        src={product.images?.[0] || '/placeholder-product.jpg'}
-                        alt={product.name}
+                        src={product.images && product.images[0] ? product.images[0] : 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop&crop=center'}
+                        alt={product.name || 'Product image'}
                         fill
                         className="object-cover"
-                        data-ai-hint={product.aiHint || product.ai_hint}
+                        onError={handleImageError}
+                        data-ai-hint={product.aiHint}
                     />
                 </div>
                 <div className="flex-1 p-4">
@@ -68,10 +74,10 @@ function WishlistItem({ item, onRemove, onAddToCart }: {
                         <div>
                             <h3 className="font-headline text-lg font-semibold">
                                 <Link 
-                                    href={`/product/${product.slug}`}
+                                    href={`/product/${product.slug || product.id}`}
                                     className="hover:text-primary transition-colors"
                                 >
-                                    {product.name}
+                                    {product.name || 'Unnamed Product'}
                                 </Link>
                             </h3>
                             {product.category && (
@@ -97,15 +103,15 @@ function WishlistItem({ item, onRemove, onAddToCart }: {
                     </div>
                     
                     <div className="flex items-center gap-2 mb-3">
-                        <span className="font-bold text-lg">₹{product.price.toLocaleString()}</span>
-                        {product.original_price && product.original_price > product.price && (
+                        <span className="font-bold text-lg">₹{(product.price || 0).toLocaleString()}</span>
+                        {product.originalPrice && product.originalPrice > (product.price || 0) && (
                             <span className="text-muted-foreground line-through">
-                                ₹{product.original_price.toLocaleString()}
+                                ₹{product.originalPrice.toLocaleString()}
                             </span>
                         )}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                         <Button
                             onClick={handleAddToCart}
                             size="sm"
@@ -118,8 +124,9 @@ function WishlistItem({ item, onRemove, onAddToCart }: {
                             asChild
                             variant="outline"
                             size="sm"
+                            className="flex-1"
                         >
-                            <Link href={`/product/${product.slug}`}>
+                            <Link href={`/product/${product.slug || product.id}`}>
                                 View Details
                             </Link>
                         </Button>
@@ -132,33 +139,42 @@ function WishlistItem({ item, onRemove, onAddToCart }: {
 
 function WishlistContent() {
     const { user } = useAuthContext();
-    const { addItem } = useCart();
+    const { addToCart } = useCart();
     const { toast } = useToast();
     const [wishlistItems, setWishlistItems] = useState<WishlistWithProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        async function fetchWishlist() {
-            if (!user) {
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const { data, error } = await getUserWishlist();
-                if (error) {
-                    setError(error.message);
-                } else {
-                    setWishlistItems(data || []);
-                }
-            } catch (err) {
-                setError('Failed to load wishlist');
-            } finally {
-                setLoading(false);
-            }
+    const fetchWishlist = async () => {
+        if (!user) {
+            setLoading(false);
+            return;
         }
 
+        try {
+            setLoading(true);
+            setError(null);
+            
+            const { data, error: apiError } = await getUserWishlist();
+            if (apiError) {
+                throw new Error(apiError.message);
+            }
+            
+            setWishlistItems(data || []);
+        } catch (err) {
+            console.error("Error fetching wishlist:", err);
+            setError(err instanceof Error ? err.message : 'Failed to load wishlist');
+            toast({
+                title: "Error",
+                description: "Failed to load your wishlist. Please try again.",
+                variant: "destructive"
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchWishlist();
     }, [user]);
 
@@ -176,6 +192,7 @@ function WishlistContent() {
                 description: "The item has been removed from your wishlist.",
             });
         } catch (error) {
+            console.error("Error removing item:", error);
             toast({
                 title: "Error",
                 description: error instanceof Error ? error.message : "Failed to remove item",
@@ -185,11 +202,19 @@ function WishlistContent() {
     };
 
     const handleAddToCart = (product: Product) => {
-        addItem(product);
-        toast({
-            title: "Added to Cart",
-            description: `${product.name} has been added to your cart.`,
-        });
+        try {
+            addToCart(product, 1);
+            toast({
+                title: "Added to Cart",
+                description: `${product.name || 'Product'} has been added to your cart.`,
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to add item to cart. Please try again.",
+                variant: "destructive"
+            });
+        }
     };
 
     if (loading) {
@@ -207,8 +232,19 @@ function WishlistContent() {
         return (
             <div className="container mx-auto px-4 py-12">
                 <div className="text-center p-8">
-                    <p className="text-red-600 mb-4">Error loading wishlist: {error}</p>
-                    <Button onClick={() => window.location.reload()}>Retry</Button>
+                    <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-4 inline-block">
+                        <Heart className="h-12 w-12 mx-auto mb-2" />
+                        <p className="text-red-600 mb-4">Error loading wishlist: {error}</p>
+                    </div>
+                    <div className="flex gap-4 justify-center">
+                        <Button onClick={fetchWishlist}>
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Retry
+                        </Button>
+                        <Button asChild variant="outline">
+                            <Link href="/products">Browse Products</Link>
+                        </Button>
+                    </div>
                 </div>
             </div>
         );

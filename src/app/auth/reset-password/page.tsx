@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useAuthContext } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,11 +10,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Eye, EyeOff, Lock, CheckCircle, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const { updatePassword, loading, error, clearError } = useAuthContext()
   const router = useRouter()
-  const searchParams = useSearchParams()
+  // Remove useSearchParams since we're not actually using it
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -78,91 +79,99 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Reset Your Password</CardTitle>
-          <CardDescription>
-            Enter your new password below.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle>Reset Your Password</CardTitle>
+        <CardDescription>
+          Enter your new password below.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter new password (6+ characters)"
-                  className="pl-10 pr-10"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-              {formErrors.password && (
-                <p className="text-sm text-destructive">{formErrors.password}</p>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="password">New Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter new password (6+ characters)"
+                className="pl-10 pr-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirm your new password"
-                  className="pl-10 pr-10"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-              {formErrors.confirmPassword && (
-                <p className="text-sm text-destructive">{formErrors.confirmPassword}</p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Updating Password...' : 'Update Password'}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <Button variant="link" asChild>
-              <Link href="/products">Back to Products</Link>
-            </Button>
+            {formErrors.password && (
+              <p className="text-sm text-destructive">{formErrors.password}</p>
+            )}
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm New Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="Confirm your new password"
+                className="pl-10 pr-10"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            {formErrors.confirmPassword && (
+              <p className="text-sm text-destructive">{formErrors.confirmPassword}</p>
+            )}
+          </div>
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Updating Password...' : 'Update Password'}
+          </Button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <Button variant="link" asChild>
+            <Link href="/products">Back to Products</Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Suspense fallback={<div>Loading...</div>}>
+        <ResetPasswordContent />
+      </Suspense>
     </div>
   )
 }

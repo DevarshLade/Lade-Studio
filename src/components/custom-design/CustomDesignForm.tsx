@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Loader2, CheckCircle, AlertCircle, Info } from 'lucide-react'
 import { getCategories, getProductsByCategory, submitCustomDesignRequest } from '@/lib/api/customDesigns'
 import { DesignImageUpload } from './DesignImageUpload'
 import type { Category } from '@/lib/api/customDesigns'
 import type { Product } from '@/types/database'
+import { useToast } from '@/hooks/use-toast'
 
 interface CustomDesignFormProps {
   onSuccess?: () => void
@@ -41,6 +42,7 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const { toast } = useToast()
 
   // Load categories on component mount
   useEffect(() => {
@@ -64,6 +66,11 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
       
       if (error) {
         console.error('Error loading categories:', error)
+        toast({
+          title: "Error",
+          description: "Failed to load categories. Please try again.",
+          variant: "destructive"
+        })
         return
       }
       
@@ -72,6 +79,11 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
       }
     } catch (error) {
       console.error('Unexpected error loading categories:', error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while loading categories.",
+        variant: "destructive"
+      })
     } finally {
       setLoadingCategories(false)
     }
@@ -80,18 +92,34 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
   const loadProducts = async (categoryId: string) => {
     try {
       setLoadingProducts(true)
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors.productId
+        return newErrors
+      })
+      
       const { data, error } = await getProductsByCategory(categoryId)
       
       if (error) {
         console.error('Error loading products:', error)
+        setErrors(prev => ({ ...prev, productId: error.message || 'Failed to load products for this category. Please try again.' }))
+        setProducts([])
         return
       }
       
       if (data) {
         setProducts(data)
+        // If there are no products for this category, show a message
+        if (data.length === 0) {
+          setErrors(prev => ({ ...prev, productId: 'No products available in this category. Please select a different category or contact us for more information.' }))
+        }
+      } else {
+        setProducts([])
       }
     } catch (error) {
       console.error('Unexpected error loading products:', error)
+      setErrors(prev => ({ ...prev, productId: 'An unexpected error occurred while loading products. Please try again.' }))
+      setProducts([])
     } finally {
       setLoadingProducts(false)
     }
@@ -102,6 +130,8 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
 
     if (!formData.customerName.trim()) {
       newErrors.customerName = 'Customer name is required'
+    } else if (formData.customerName.trim().length < 2) {
+      newErrors.customerName = 'Customer name must be at least 2 characters long'
     }
 
     if (!formData.customerEmail.trim()) {
@@ -120,10 +150,18 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
 
     if (formData.quantity < 1) {
       newErrors.quantity = 'Quantity must be at least 1'
+    } else if (formData.quantity > 100) {
+      newErrors.quantity = 'Quantity cannot exceed 100'
     }
 
     if (formData.designReferenceImages.length === 0) {
       newErrors.designReferenceImages = 'Please upload at least one design reference image'
+    } else if (formData.designReferenceImages.length > 10) {
+      newErrors.designReferenceImages = 'You can upload a maximum of 10 images'
+    }
+
+    if (formData.additionalDetails && formData.additionalDetails.length > 1000) {
+      newErrors.additionalDetails = 'Additional details cannot exceed 1000 characters'
     }
 
     setErrors(newErrors)
@@ -134,6 +172,11 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
     e.preventDefault()
     
     if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in the form before submitting.",
+        variant: "destructive"
+      })
       return
     }
 
@@ -154,11 +197,21 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
 
       if (error) {
         setErrors({ submit: error.message })
+        toast({
+          title: "Submission Error",
+          description: error.message || "Failed to submit your request. Please try again.",
+          variant: "destructive"
+        })
         return
       }
 
       if (data) {
         setSubmitSuccess(true)
+        toast({
+          title: "Request Submitted",
+          description: "Your custom design request has been submitted successfully. We'll get back to you soon!",
+        })
+        
         // Reset form after success
         setFormData({
           customerName: '',
@@ -178,6 +231,11 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
     } catch (error) {
       console.error('Unexpected error submitting form:', error)
       setErrors({ submit: 'An unexpected error occurred. Please try again.' })
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      })
     } finally {
       setLoading(false)
     }
@@ -216,6 +274,21 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Information Banner */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div className="flex items-start">
+          <Info className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+          <div>
+            <h4 className="text-sm font-medium text-blue-800">How to Get Started</h4>
+            <p className="text-sm text-blue-700 mt-1">
+              Fill out this form with your custom design requirements. Upload clear reference images 
+              to help us understand your vision. Our team will contact you to discuss details, 
+              timeline, and pricing within 2-3 business days.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Customer Information */}
         <div>
@@ -268,6 +341,7 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Enter your phone number"
           />
+          <p className="text-xs text-gray-500 mt-1">We'll use this to contact you about your request</p>
         </div>
 
         <div>
@@ -278,6 +352,7 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
             type="number"
             id="quantity"
             min="1"
+            max="100"
             value={formData.quantity}
             onChange={(e) => handleInputChange('quantity', parseInt(e.target.value) || 1)}
             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
@@ -333,27 +408,37 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
             <span className="text-sm text-gray-500">Loading products...</span>
           </div>
         ) : formData.categoryId ? (
-          <select
-            id="productId"
-            value={formData.productId}
-            onChange={(e) => handleInputChange('productId', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-              errors.productId ? 'border-red-500' : 'border-gray-300'
-            }`}
-          >
-            <option value="">Choose a product</option>
-            {products.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name} - ₹{product.price}
-              </option>
-            ))}
-          </select>
+          products.length > 0 ? (
+            <select
+              id="productId"
+              value={formData.productId}
+              onChange={(e) => handleInputChange('productId', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                errors.productId ? 'border-red-500' : 'border-gray-300'
+              }`}
+            >
+              <option value="">Choose a product</option>
+              {products.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {product.name} - ₹{product.price}
+                </option>
+              ))}
+            </select>
+          ) : errors.productId ? (
+            <div className="text-sm text-red-500 py-2">
+              {errors.productId}
+            </div>
+          ) : (
+            <div className="text-sm text-gray-500 italic py-2">
+              No products available in this category
+            </div>
+          )
         ) : (
           <div className="text-sm text-gray-500 italic py-2">
             Please select a category first
           </div>
         )}
-        {errors.productId && (
+        {errors.productId && !loadingProducts && products.length > 0 && (
           <p className="text-red-500 text-sm mt-1">{errors.productId}</p>
         )}
       </div>
@@ -369,6 +454,9 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
           customerId={formData.customerEmail || 'temp'}
           maxImages={10}
         />
+        <p className="text-xs text-gray-500 mt-1">
+          Upload clear images of your design inspiration. Maximum 10 images allowed.
+        </p>
         {errors.designReferenceImages && (
           <p className="text-red-500 text-sm mt-1">{errors.designReferenceImages}</p>
         )}
@@ -384,9 +472,19 @@ export function CustomDesignForm({ onSuccess }: CustomDesignFormProps) {
           rows={4}
           value={formData.additionalDetails}
           onChange={(e) => handleInputChange('additionalDetails', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Please provide any additional details about your custom design requirements..."
+          className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+            errors.additionalDetails ? 'border-red-500' : 'border-gray-300'
+          }`}
+          placeholder="Please provide any additional details about your custom design requirements... (e.g., specific colors, dimensions, special instructions)"
         />
+        {formData.additionalDetails && (
+          <p className="text-xs text-gray-500 mt-1 text-right">
+            {formData.additionalDetails.length}/1000 characters
+          </p>
+        )}
+        {errors.additionalDetails && (
+          <p className="text-red-500 text-sm mt-1">{errors.additionalDetails}</p>
+        )}
       </div>
 
       {/* Submit Button */}

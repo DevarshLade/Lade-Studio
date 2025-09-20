@@ -36,7 +36,7 @@ export async function canUserReviewProduct(productId: string): Promise<{
     }
 
     // Check if user has any delivered orders containing this product
-    const { data: orders, error: ordersError } = await supabase
+    const { data: orders, error: ordersError } = await (supabase as any)
       .from('orders')
       .select(`
         id,
@@ -63,7 +63,7 @@ export async function canUserReviewProduct(productId: string): Promise<{
     }
 
     // Check if any of the delivered orders match the user's phone or name
-    const hasMatchingOrder = orders.some(order => 
+    const hasMatchingOrder = (orders as any[]).some((order: any) => 
       (userPhone && order.customer_phone === userPhone) ||
       (userName && order.customer_name === userName)
     )
@@ -78,7 +78,7 @@ export async function canUserReviewProduct(productId: string): Promise<{
 
     // Check if user has reached the review limit (10 reviews per product)
     const userEmail = user.email
-    const { data: existingReviews, error: reviewError } = await supabase
+    const { data: existingReviews, error: reviewError } = await (supabase as any)
       .from('reviews')
       .select('id')
       .eq('product_id', productId)
@@ -127,7 +127,7 @@ export async function canUserEditReview(reviewId: string): Promise<{
     }
 
     // Get the review to check ownership
-    const { data: review, error: reviewError } = await supabase
+    const { data: review, error: reviewError } = await (supabase as any)
       .from('reviews')
       .select('author_name, product_id')
       .eq('id', reviewId)
@@ -179,16 +179,37 @@ export async function updateProductReview(
     const { canEdit, reason, error: editError } = await canUserEditReview(reviewId)
     
     if (editError) {
-      throw editError
+      throw new Error(`Permission check failed: ${editError.message}`);
     }
     
     if (!canEdit) {
-      throw new Error(reason || 'You are not authorized to edit this review')
+      throw new Error(reason || 'You are not authorized to edit this review');
     }
 
     // Validate rating
     if (rating < 1 || rating > 5) {
-      throw new Error('Rating must be between 1 and 5')
+      throw new Error('Rating must be between 1 and 5');
+    }
+    
+    // Validate comment length
+    if (comment && comment.length > 1000) {
+      throw new Error('Comment must be less than 1000 characters');
+    }
+    
+    // Validate image URLs
+    if (imageUrls && imageUrls.length > 5) {
+      throw new Error('Maximum 5 images allowed');
+    }
+    
+    // Validate image URL format
+    if (imageUrls) {
+      for (const url of imageUrls) {
+        try {
+          new URL(url);
+        } catch {
+          throw new Error('Invalid image URL provided');
+        }
+      }
     }
 
     const updateData = {
@@ -197,7 +218,7 @@ export async function updateProductReview(
       image_urls: imageUrls || []
     }
 
-    const { data: review, error } = await supabase
+    const { data: review, error } = await (supabase as any)
       .from('reviews')
       .update(updateData)
       .eq('id', reviewId)
@@ -205,11 +226,19 @@ export async function updateProductReview(
       .single()
 
     if (error) {
-      throw new Error(error.message)
+      let errorMessage = error.message;
+      
+      // Provide more user-friendly error messages
+      if (error.message.includes('constraint')) {
+        errorMessage = 'Invalid data provided. Please check your input.';
+      }
+      
+      throw new Error(errorMessage);
     }
 
     return { data: review, error: null }
   } catch (error) {
+    console.error("Review update error:", error);
     return { data: null, error: error as Error }
   }
 }
@@ -232,7 +261,7 @@ export async function getUserReviewsForProduct(productId: string): Promise<{
     const userName = user.user_metadata?.name || user.email?.split('@')[0]
     const userEmail = user.email
 
-    const { data: reviews, error } = await supabase
+    const { data: reviews, error } = await (supabase as any)
       .from('reviews')
       .select('*')
       .eq('product_id', productId)
@@ -267,7 +296,7 @@ export async function getUserReviewForProduct(productId: string): Promise<{
     const userName = user.user_metadata?.name || user.email?.split('@')[0]
     const userEmail = user.email
 
-    const { data: review, error } = await supabase
+    const { data: review, error } = await (supabase as any)
       .from('reviews')
       .select('*')
       .eq('product_id', productId)
@@ -293,7 +322,7 @@ export async function getUserReviewForProduct(productId: string): Promise<{
  */
 export async function getProductReviews(productId: string): Promise<{ data: LegacyReview[] | null; error: Error | null }> {
   try {
-    const { data: reviews, error } = await supabase
+    const { data: reviews, error } = await (supabase as any)
       .from('reviews')
       .select('*')
       .eq('product_id', productId)
@@ -308,7 +337,7 @@ export async function getProductReviews(productId: string): Promise<{ data: Lega
     }
 
     // Convert to legacy format
-    const legacyReviews = reviews.map(supabaseReviewToLegacy)
+    const legacyReviews = (reviews as any[]).map(supabaseReviewToLegacy)
 
     return { data: legacyReviews, error: null }
   } catch (error) {
@@ -351,7 +380,7 @@ export async function addProductReview(
       image_urls: imageUrls || []
     }
 
-    const { data: review, error } = await supabase
+    const { data: review, error } = await (supabase as any)
       .from('reviews')
       .insert(reviewData)
       .select()
@@ -385,7 +414,7 @@ export async function getUserReviewCount(productId: string): Promise<{
     const userName = user.user_metadata?.name || user.email?.split('@')[0]
     const userEmail = user.email
 
-    const { data: reviews, error } = await supabase
+    const { data: reviews, error } = await (supabase as any)
       .from('reviews')
       .select('id')
       .eq('product_id', productId)
@@ -412,7 +441,7 @@ export async function getProductAverageRating(productId: string): Promise<{
   error: Error | null 
 }> {
   try {
-    const { data: reviews, error } = await supabase
+    const { data: reviews, error } = await (supabase as any)
       .from('reviews')
       .select('rating')
       .eq('product_id', productId)
@@ -425,7 +454,7 @@ export async function getProductAverageRating(productId: string): Promise<{
       return { data: { average: 0, count: 0 }, error: null }
     }
 
-    const average = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+    const average = (reviews as any[]).reduce((sum: number, review: any) => sum + review.rating, 0) / reviews.length
     
     return { 
       data: { 
@@ -444,7 +473,7 @@ export async function getProductAverageRating(productId: string): Promise<{
  */
 export async function deleteReview(reviewId: string): Promise<{ error: Error | null }> {
   try {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('reviews')
       .delete()
       .eq('id', reviewId)

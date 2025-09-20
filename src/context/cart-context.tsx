@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback, memo } from 'react';
 import type { Product } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,7 +20,34 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { toast } = useToast();
 
-  const addToCart = (product: Product, quantity: number) => {
+  // Load cart from localStorage on initial render
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch (error) {
+        console.error('Failed to parse cart from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const addToCart = useCallback((product: Product, quantity: number) => {
+    // Check if product is sold out
+    if (product.soldOut) {
+      toast({
+        title: "Product Unavailable",
+        description: `${product.name || 'This product'} is currently sold out.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id);
       if (existingItem) {
@@ -32,17 +59,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prevItems, { ...product, quantity }];
     });
-  };
+    
+    toast({
+      title: "Added to Cart!",
+      description: `${product.name || 'Product'} has been added to your cart.`
+    });
+  }, [toast]);
 
-  const removeFromCart = (productId: string) => {
+  const removeFromCart = useCallback((productId: string) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
     toast({
         title: "Item Removed",
         description: "The item has been removed from your cart."
-    })
-  };
+    });
+  }, [toast]);
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = useCallback((productId: string, quantity: number) => {
     if (quantity < 1) {
         removeFromCart(productId);
         return;
@@ -52,11 +84,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         item.id === productId ? { ...item, quantity } : item
       )
     );
-  };
+  }, [removeFromCart]);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setCartItems([]);
-  };
+  }, []);
 
   return (
     <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart }}>
